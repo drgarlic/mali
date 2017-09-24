@@ -67,5 +67,5 @@ pacstrap /mnt base base-devel > /dev/null
 
 echo -e "\n\n  Chapter IV - Configure the system\n"
 
-echo -e "\nFstab"
+echo -e "\nGeneratting the fstab file"
 genfstab -U /mnt >> /mnt/etc/fstab
