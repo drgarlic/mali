@@ -62,8 +62,8 @@ mount /dev/$sd3 /mnt/home
 
 echo -e "\n\n    Chapter III - Installation\n"
 
-echo -e "  Installing the base packages (no worries, warnings are completely normal)..."
-pacstrap /mnt base base-devel > /dev/null
+echo -e "  Installing the base packages..."
+pacstrap /mnt base base-devel > /dev/null 2>&1
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
 
