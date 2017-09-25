@@ -83,3 +83,42 @@ echo -e "  Creating the hostname..."
 read -p "  Enter a hostname : " hostnm
 arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
+
+echo -e "  Updating \"pacman.conf\"..."
+arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
+arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
+arch-chroot /mnt echo -e "[archlinuxfr]" >> /mnt/etc/pacman.conf
+arch-chroot /mnt echo -e "SigLevel = Never" >> /mnt/etc/pacman.conf
+arch-chroot /mnt echo -e "Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
+echo -e "  Updating Pacman..."
+arch-chroot /mnt pacman -Sy > /dev/null
+echo -e "  Installing Yaourt..."
+arch-chroot /mnt pacman -S yaourt > /dev/null
+echo -e "  Installing Bash-completion..."
+arch-chroot /mnt pacman -S bash-completion > /dev/null
+echo -e "  Installing wifi packages..."
+arch-chroot /mnt pacman -S iw wpa_supplicant dialog > /dev/null
+echo -e "  Installing the Intel microcode package..."
+arch-chroot /mnt pacman -S intel-ucode > /dev/null
+
+echo -e "  Enter root's password: "
+arch-chroot /mnt passwd
+read -p "Enter a username: " usr
+echo -e "  Creating the user..."
+arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
+arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
+echo -e "  Enter the user's password: "
+arch-chroot /mnt passwd $usr
+
+echo -e "  Setting the boot loader..."
+arch-chroot /mnt bootctl install > /dev/null
+arch-chroot /mnt echo -e "title Arch Linux" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "linux /vmlinuz-linux" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "initrd /intel-ucode.img" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "initrd /initramfs-linux.img" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
+
+read -p "  Done.\n\n  Press enter to continue"
+umount -R /mnt
+shutdown
