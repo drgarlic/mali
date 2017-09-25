@@ -93,13 +93,16 @@ arch-chroot /mnt echo -e "Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/
 echo -e "  Updating Pacman..."
 arch-chroot /mnt pacman -Sy > /dev/null
 echo -e "  Installing Yaourt..."
-arch-chroot /mnt pacman -S yaourt > /dev/null
-echo -e "  Installing Bash-completion..."
-arch-chroot /mnt pacman -S bash-completion > /dev/null
-echo -e "  Installing wifi packages..."
-arch-chroot /mnt pacman -S iw wpa_supplicant dialog > /dev/null
+arch-chroot /mnt pacman -Syy yaourt > /dev/null
+echo -e "  Installing basic packages..."
+arch-chroot /mnt pacman -Syy zip unzip p7zip vim mc alsa-utils ntfs-3g exfat-util bash-completion > /dev/null
 echo -e "  Installing the Intel microcode package..."
-arch-chroot /mnt pacman -S intel-ucode > /dev/null
+arch-chroot /mnt pacman -Syy intel-ucode > /dev/null
+echo -e "  Installing the network manager..."
+arch-chroot /mnt pacman -Syy networkmanager 
+arch-chroot /mnt systemctl enable NetworkManager
+echo -e "  Installing wifi packages..."
+arch-chroot /mnt pacman -Syy iw wpa_supplicant dialog > /dev/null
 
 echo -e "  Enter root's password: "
 arch-chroot /mnt passwd
