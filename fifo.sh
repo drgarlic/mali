@@ -113,12 +113,12 @@ arch-chroot /mnt passwd $usr
 
 echo -e "  Setting the boot loader..."
 arch-chroot /mnt bootctl install > /dev/null
-arch-chroot /mnt echo -e "title Arch Linux" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "title Arch Linux" > /mnt/boot/loader/entries/arch.conf
 arch-chroot /mnt echo -e "linux /vmlinuz-linux" >> /mnt/boot/loader/entries/arch.conf
 arch-chroot /mnt echo -e "initrd /intel-ucode.img" >> /mnt/boot/loader/entries/arch.conf
 arch-chroot /mnt echo -e "initrd /initramfs-linux.img" >> /mnt/boot/loader/entries/arch.conf
 arch-chroot /mnt echo -e "options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
 
-read -p "  Done.\n\n  Press enter to continue"
+read -p "\n\n  Done.\n\n  Press enter to continue"
 umount -R /mnt
 shutdown
