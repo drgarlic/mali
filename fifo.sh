@@ -107,49 +107,57 @@ arch-chroot /mnt pacman -Syy iw wpa_supplicant dialog > /dev/null
 echo "  Installing video drivers..."
 arch-chroot /mnt pacman -Syy xf86-video-intel mesa > /dev/null
 echo "  Installing wifi packages..."
-arch-chroot /mnt pacman -Syy xorg-server xorg-server-utils xorg-xinit > /dev/null
-
-xf86-input-synaptics xf86-input-libinput `#Touchpad`
-termite `#Terminal` \
-#tor \
-rtorrent `#Torrent cli` \
-tmux `#Terminal multiplexer` \
-neovim `#Text editor` \
-firefox `#Browser` \
-alsa-utils alsa-lib pusleaudio pulseaudio-alsa `#Sound` \
-dunst `#Notification server` \
-udiskie `#Automount` \
-i3lock `#Lockscreen` \
-python python2 python-pip python2-pip `#Python` \
-android-tools `#ADB` \
-mpv `#VLC` \
-ranger w3m `#File manager` \
-slim archlinux-themes-slim `#Login` \
-feh `#Image viewer` \
+arch-chroot /mnt pacman -Syy xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
+if [ $laptop = 1 ]
+then
+  echo "  Installing touchpad packages..."
+  arch-chroot /mnt pacman -Syy xf86-input-synaptics xf86-input-libinput
+fi
+echo "  Installing the terminal..."
+arch-chroot /mnt pacman -Syy termite tmux neovim feh
+echo "  Installing the torrent client"
+arch-chroot /mnt pacman -Syy qbittorrent
+echo "  Installing the audio manager"
+arch-chroot /mnt pacman -Syy alsa-utils alsa-lib
+echo "  Installing some useful desktop shit"
+arch-chroot /mnt pacman -Syy dunst i3lock rofi redshift scrot
+udiskie `#Automount`
+echo "  Installing python"
+arch-chroot /mnt pacman -Syy python python2 python-pip python2-pip
+echo "  Installing java"
+arch-chroot /mnt pacman -Syy jdk8-openjdk java-openjfx
+echo "  Installing mpv"
+arch-chroot /mnt pacman -Syy mpv
+echo "  Installing the login manager"
+arch-chroot /mnt pacman -Syy lightdm
 zip unzip unrar `#Compression` \
-redshift `#Flux` \
 htop `#Sys info` \
-xautolock `#Autolock` \
-scrot `#Screenshots` \
 openssh `#SSH` \
 rsync `#Sync files` \
 exfat-utils `#Mount exfat`
 ntfs-3g `#Read and write ntfs` \
 unclutter `#Hide the mouse` \
-xsel `#Copy` \
-ruby \
-npm `#Magnet dependencie` \
 powertop acpi tlp `#Battery` \
-rofi `#Launcher` \
-jdk8-openjdk java-openjfx `#Java` \
+
 libreoffice-fresh `#Word processor` \
-gimp `#Graphical editor` \ 
-mutt `#Mail` \
-youtube-dl `#Rtv dependencie` \
+gimp `#Graphical editor` \
 newsbeuter `#Rss` \
-openvpn `#Vpn` \
-intellij-idea-community-edition `#Java IDE` \
 gtk-engine-murrine `#Gtk`
+
+echo -e "Yaourt"
+yaourt -S \
+concalc `#CLI calculator` \
+libnotify-id `#Notifications` \
+lemonbar-xft-git `#Bar` \
+hsetroot `#Wallpaper` \
+zeronet-git `#Decentralize internet` \
+kpcli `#Keepass` \
+addic7ed-cli `#Subtitles` \
+rtv `#Reddit` \
+adwaita-compact-gtk-theme `#Gtk` \
+torrentflix peerflix
+firefox-nightly
+nnn
 
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
