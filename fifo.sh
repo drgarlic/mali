@@ -104,6 +104,52 @@ arch-chroot /mnt pacman -Syy networkmanager
 arch-chroot /mnt systemctl enable NetworkManager
 echo "  Installing wifi packages..."
 arch-chroot /mnt pacman -Syy iw wpa_supplicant dialog > /dev/null
+echo "  Installing video drivers..."
+arch-chroot /mnt pacman -Syy xf86-video-intel mesa > /dev/null
+echo "  Installing wifi packages..."
+arch-chroot /mnt pacman -Syy xorg-server xorg-server-utils xorg-xinit > /dev/null
+
+xf86-input-synaptics xf86-input-libinput `#Touchpad`
+termite `#Terminal` \
+#tor \
+rtorrent `#Torrent cli` \
+tmux `#Terminal multiplexer` \
+neovim `#Text editor` \
+firefox `#Browser` \
+alsa-utils alsa-lib pusleaudio pulseaudio-alsa `#Sound` \
+dunst `#Notification server` \
+udiskie `#Automount` \
+i3lock `#Lockscreen` \
+python python2 python-pip python2-pip `#Python` \
+android-tools `#ADB` \
+mpv `#VLC` \
+ranger w3m `#File manager` \
+slim archlinux-themes-slim `#Login` \
+feh `#Image viewer` \
+zip unzip unrar `#Compression` \
+redshift `#Flux` \
+htop `#Sys info` \
+xautolock `#Autolock` \
+scrot `#Screenshots` \
+openssh `#SSH` \
+rsync `#Sync files` \
+exfat-utils `#Mount exfat`
+ntfs-3g `#Read and write ntfs` \
+unclutter `#Hide the mouse` \
+xsel `#Copy` \
+ruby \
+npm `#Magnet dependencie` \
+powertop acpi tlp `#Battery` \
+rofi `#Launcher` \
+jdk8-openjdk java-openjfx `#Java` \
+libreoffice-fresh `#Word processor` \
+gimp `#Graphical editor` \ 
+mutt `#Mail` \
+youtube-dl `#Rtv dependencie` \
+newsbeuter `#Rss` \
+openvpn `#Vpn` \
+intellij-idea-community-edition `#Java IDE` \
+gtk-engine-murrine `#Gtk`
 
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
