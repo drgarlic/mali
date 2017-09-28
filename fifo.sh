@@ -1,12 +1,13 @@
 #!/bin/bash
 
+clear
 echo -e "\n    Welcome.
-\n  This script will guide you during this very painful installation of Arch Linux.
-\n  Put your belt on, take a deep breath and please try not to panic."
+  This script will guide you during this very painful installation of Arch Linux.
+  Put your belt on, take a deep breath and please try not to panic."
 read -p "\n  Press enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
-echo -e "  Checking the internet connection..."
+echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
 do
   echo -e "\nPlug an ethernet cable"
@@ -17,14 +18,14 @@ do
   ping -c 1 archlinux.org > /dev/null
 done
 
-echo -e "  Updating the system clock..."
+echo "  Updating the system clock..."
 timedatectl set-ntp true
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda): " sd
 
-echo -e "  Destroying the partition table..."
+echo "  Destroying the partition table..."
 sgdisk -Z /dev/sdb > /dev/null
 echo -e "  Formatting the \"boot\" partition..."
 sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd > /dev/null
@@ -33,7 +34,7 @@ echo -e "  Formatting the \"swap\" partition..."
 sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd > /dev/null
 echo -e "  Formatting the \"arch\" partition..."
 sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd > /dev/null
-echo -e "  Updating the partition table..."
+echo "  Updating the partition table..."
 sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
@@ -62,24 +63,24 @@ mount /dev/$sd3 /mnt/home
 
 echo -e "\n\n    Chapter III - Installation\n"
 
-echo -e "  Installing the base packages..."
+echo "  Installing the base packages..."
 pacstrap /mnt base base-devel > /dev/null 2>&1
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
 
-echo -e "  Generating the fstab file..."
+echo "  Generating the fstab file..."
 genfstab -U /mnt >> /mnt/etc/fstab
 
-echo -e "  Setting the time..."
+echo "  Setting the time..."
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
 arch-chroot /mnt hwclock --systohc --utc
 
-echo -e "  Setting the language..."
+echo "  Setting the language..."
 arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
 arch-chroot /mnt locale-gen
 arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf
 
-echo -e "  Creating the hostname..."
+echo "  Creating the hostname..."
 read -p "  Enter a hostname : " hostnm
 arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
@@ -87,40 +88,40 @@ arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/ho
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
 arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
-arch-chroot /mnt echo -e "[archlinuxfr]" >> /mnt/etc/pacman.conf
-arch-chroot /mnt echo -e "SigLevel = Never" >> /mnt/etc/pacman.conf
-arch-chroot /mnt echo -e "Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
-echo -e "  Updating Pacman..."
+arch-chroot /mnt echo "[archlinuxfr]" >> /mnt/etc/pacman.conf
+arch-chroot /mnt echo "SigLevel = Never" >> /mnt/etc/pacman.conf
+arch-chroot /mnt echo "Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
+echo "  Updating Pacman..."
 arch-chroot /mnt pacman -Sy > /dev/null
-echo -e "  Installing Yaourt..."
+echo "  Installing Yaourt..."
 arch-chroot /mnt pacman -Syy yaourt > /dev/null
-echo -e "  Installing basic packages..."
+echo "  Installing basic packages..."
 arch-chroot /mnt pacman -Syy zip unzip p7zip vim mc alsa-utils ntfs-3g exfat-util bash-completion > /dev/null
-echo -e "  Installing the Intel microcode package..."
+echo "  Installing the Intel microcode package..."
 arch-chroot /mnt pacman -Syy intel-ucode > /dev/null
-echo -e "  Installing the network manager..."
+echo "  Installing the network manager..."
 arch-chroot /mnt pacman -Syy networkmanager 
 arch-chroot /mnt systemctl enable NetworkManager
-echo -e "  Installing wifi packages..."
+echo "  Installing wifi packages..."
 arch-chroot /mnt pacman -Syy iw wpa_supplicant dialog > /dev/null
 
-echo -e "  Enter root's password: "
+echo "  Enter root's password: "
 arch-chroot /mnt passwd
-read -p "Enter a username: " usr
-echo -e "  Creating the user..."
+read -p "  Enter a username: " usr
+echo "  Creating the user..."
 arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
-echo -e "  Enter the user's password: "
+echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
 
 echo -e "  Setting the boot loader..."
 arch-chroot /mnt bootctl install > /dev/null
-arch-chroot /mnt echo -e "title Arch Linux" > /mnt/boot/loader/entries/arch.conf
-arch-chroot /mnt echo -e "linux /vmlinuz-linux" >> /mnt/boot/loader/entries/arch.conf
-arch-chroot /mnt echo -e "initrd /intel-ucode.img" >> /mnt/boot/loader/entries/arch.conf
-arch-chroot /mnt echo -e "initrd /initramfs-linux.img" >> /mnt/boot/loader/entries/arch.conf
-arch-chroot /mnt echo -e "options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
+arch-chroot /mnt echo -e "title Arch Linux
+linux /vmlinuz-linux
+initrd /intel-ucode.img
+initrd /initramfs-linux.img
+options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
 
 read -p "\n\n  Done.\n\n  Press enter to continue"
 umount -R /mnt
