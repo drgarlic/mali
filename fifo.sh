@@ -176,7 +176,7 @@ fi
 echo "  Installing pacaur"
 arch-chroot /mnt yaourt -S --noconfirm pacaur
 
-arch-chroot /mnt pacaur -Sy --noconfirm
+arch-chroot /mnt pacaur -Sy --noconfirm \
 concalc `#CLI calculator` \
 libnotify-id `#Notifications` \
 lemonbar-xft-git `#Bar` \
@@ -184,9 +184,10 @@ hsetroot `#Wallpaper` \
 kpcli `#Keepass` \
 addic7ed-cli `#Subtitles` \
 rtv `#Reddit` \
-torrentflix peerflix
-firefox-nightly
-nnn
+torrentflix peerflix \
+firefox-nightly \
+nnn \
+openbox-patched
 
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
