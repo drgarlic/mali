@@ -11,7 +11,7 @@ echo -e "\n\n    Chapter I - Preparations\n"
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
-while [ $wifi = 'y' ]
+while [ $wifi = "y" ]
 do
   wifi-menu > /dev/null
   if [ $? != 0 ]
@@ -35,7 +35,7 @@ do
 done
 
 echo "  Checking if booted as bios or uefi..."
-ls /sys/firmware/efi/efivars 2> /dev/null
+ls /sys/firmware/efi/efivars > /dev/null
 if [ $? = 0 ]
 then
   uefi=true
