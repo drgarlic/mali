@@ -22,7 +22,7 @@ do
   else
     wifi='n'
   fi
-fi
+done
 
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
