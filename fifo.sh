@@ -16,9 +16,9 @@ do
   wifi-menu > /dev/null
   if [ $? != 0 ]
   then
-    read -p "  Do you want to try again (Y/n)? " $try
-    try=${try,,}
-    wifi=${try::1}
+    read -p "  Do you want to try again (Y/n)? " $again
+    again=${again,,}
+    wifi=${again::1}
   else
     wifi='n'
   fi
