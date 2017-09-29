@@ -53,7 +53,7 @@ read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/sdb > /dev/null
 echo -e "  Formatting the \"boot\" partition..."
-if [ uefi = true ]
+if [ "$uefi" = true ]
 then
   sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd > /dev/null
 else
@@ -71,7 +71,7 @@ fdisk -l /dev/$sd > /dev/null
 
 sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
-if [ uefi = true ]
+if [ "$uefi" = true ]
 then
   mkfs.fat -F32 /dev/$sd1 > /dev/null
 else
@@ -200,7 +200,7 @@ echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
 
 echo -e "  Setting the boot loader..."
-if [ uefi = true ]
+if [ "$uefi" = true ]
 then
   arch-chroot /mnt bootctl install > /dev/null
   arch-chroot /mnt echo -e "title Arch Linux
