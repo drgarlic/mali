@@ -4,12 +4,11 @@ clear
 echo -e "\n    Welcome.
   This script will guide you during this very painful installation of Arch Linux.
   Put your belt on, take a deep breath and please try not to panic."
-read -p -e "
-  Press enter to continue"
+read -p -e "\nPress enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
-read -p "  Do you want to use wifi (Y/n)? " $wifi
+read -p "  Do you want to use wifi (Y/n) ? `echo $'\n  > '`" $wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
 while [ $wifi = 'y' ]
@@ -17,7 +16,7 @@ do
   wifi-menu > /dev/null
   if [ $? != 0 ]
   then
-    read -p "  Do you want to try again (Y/n)? " $again
+    read -p "  Do you want to try again (Y/n)?  `echo $'\n  > '`" $again
     again=${again,,}
     wifi=${again::1}
   else
