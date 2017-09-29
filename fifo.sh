@@ -153,7 +153,7 @@ echo "  Installing Python"
 arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip
 echo "  Installing Java"
 arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx
-echo "  Installing Mpv"
+echo "  Installing the video player"
 arch-chroot /mnt pacman -Syy --noconfirm mpv
 echo "  Installing the login manager"
 arch-chroot /mnt pacman -Syy --noconfirm lightdm
