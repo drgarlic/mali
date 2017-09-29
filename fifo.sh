@@ -23,7 +23,7 @@ do
   echo -e "  Plug an ethernet cable"
   read -p "  Press enter to continue"
   systemctl stop dhcpcd
-  systemcll start dhcpcd
+  systemctl start dhcpcd
   sleep 5
 done
 
