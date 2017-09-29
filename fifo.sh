@@ -8,14 +8,14 @@ read -p "`echo -e "\n  "`Press enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
-read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
-wifi=${wifi,,}  #Lowercase
-wifi=${wifi::1} #First letter
-if [ "$wifi" = "y" ]
-then
-  echo "  Please launch wifi-menu before starting the script"
-  exit 1
-fi
+# read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
+# wifi=${wifi,,}  #Lowercase
+# wifi=${wifi::1} #First letter
+# if [ "$wifi" = "y" ]
+# then
+#   echo "  Please launch wifi-menu before starting the script"
+#   exit 1
+# fi
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
