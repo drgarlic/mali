@@ -44,7 +44,7 @@ lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 
 echo "  Destroying the partition table..."
-sgdisk -Z /dev/sdb > /dev/null
+sgdisk -Z /dev/$sd > /dev/null
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
 then
