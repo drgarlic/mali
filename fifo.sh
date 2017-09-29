@@ -6,6 +6,8 @@ echo -e "\n    Welcome.
   Put your belt on, take a deep breath and please try not to panic."
 read -p "\n  Press enter to continue"
 
+
+
 echo -e "\n\n    Chapter I - Preparations\n"
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
@@ -108,7 +110,7 @@ echo "  Installing video drivers..."
 arch-chroot /mnt pacman -Syy xf86-video-intel mesa > /dev/null
 echo "  Installing wifi packages..."
 arch-chroot /mnt pacman -Syy xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
-if [ $laptop = 1 ]
+if [ $laptop = true ]
 then
   echo "  Installing touchpad packages..."
   arch-chroot /mnt pacman -Syy xf86-input-synaptics xf86-input-libinput
@@ -170,12 +172,22 @@ echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
 
 echo -e "  Setting the boot loader..."
-arch-chroot /mnt bootctl install > /dev/null
-arch-chroot /mnt echo -e "title Arch Linux
-linux /vmlinuz-linux
-initrd /intel-ucode.img
-initrd /initramfs-linux.img
-options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
+if [ uefi = true ]
+then
+  arch-chroot /mnt bootctl install > /dev/null
+  arch-chroot /mnt echo -e "title Arch Linux
+  linux /vmlinuz-linux
+  initrd /intel-ucode.img
+  initrd /initramfs-linux.img
+  options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
+else if
+  arch-chroot /mnt pacman -S grub
+  arch-chroot /mnt grub-install --boot-directory=/boot --recheck --debug --target=i386-pc /dev/$sd
+  if [ $? != 0 ]; then
+    arch-chroot /mnt grub-install --boot-directory=/boot --recheck --debug --force --target=i386-pc /dev/$sd
+  fi
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+fi
 
 read -p "\n\n  Done.\n\n  Press enter to continue"
 umount -R /mnt
