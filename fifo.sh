@@ -130,66 +130,60 @@ echo "  Updating Pacman..."
 arch-chroot /mnt pacman -Sy > /dev/null
 echo "  Installing Yaourt..."
 arch-chroot /mnt pacman -Syy yaourt > /dev/null
-echo "  Installing basic packages..."
-arch-chroot /mnt pacman -Syy zip unzip p7zip vim mc alsa-utils ntfs-3g exfat-util bash-completion > /dev/null
 echo "  Installing the Intel microcode package..."
-arch-chroot /mnt pacman -Syy intel-ucode > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm intel-ucode > /dev/null
 echo "  Installing the network manager..."
-arch-chroot /mnt pacman -Syy networkmanager 
+arch-chroot /mnt pacman -Syy --noconfirm networkmanager 
 arch-chroot /mnt systemctl enable NetworkManager
 echo "  Installing wifi packages..."
-arch-chroot /mnt pacman -Syy iw wpa_supplicant dialog > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog > /dev/null
 echo "  Installing video drivers..."
-arch-chroot /mnt pacman -Syy xf86-video-intel mesa > /dev/null
-echo "  Installing wifi packages..."
-arch-chroot /mnt pacman -Syy xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa > /dev/null
+echo "  Installing X"
+arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
+echo "  Installing the terminal..."
+arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt
+echo "  Installing the torrent client"
+arch-chroot /mnt pacman -Syy --noconfirm qbittorrent
+echo "  Installing the audio manager"
+arch-chroot /mnt pacman -Syy --noconfirm alsa-utils alsa-lib
+echo "  Installing some useful desktop shit"
+arch-chroot /mnt pacman -Syy --noconfirm dunst i3lock rofi redshift scrot unclutter
+echo "  Installing Python"
+arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip
+echo "  Installing Java"
+arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx
+echo "  Installing Mpv"
+arch-chroot /mnt pacman -Syy --noconfirm mpv
+echo "  Installing the login manager"
+arch-chroot /mnt pacman -Syy --noconfirm lightdm
+echo "  Installing the battery manager"
+arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp
+echo "  Installing Libre Office"
+arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh
+echo "  Installing Gimp"
+arch-chroot /mnt pacman -Syy --noconfirm gimp
+echo "  Installing compression software"
+arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip
+echo "  Installing external harddrive related software"
+exfat-utils ntfs-3g udiskie
 if [ $laptop = true ]
 then
   echo "  Installing touchpad packages..."
-  arch-chroot /mnt pacman -Syy xf86-input-synaptics xf86-input-libinput
+  arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput
 fi
-echo "  Installing the terminal..."
-arch-chroot /mnt pacman -Syy termite tmux neovim feh
-echo "  Installing the torrent client"
-arch-chroot /mnt pacman -Syy qbittorrent
-echo "  Installing the audio manager"
-arch-chroot /mnt pacman -Syy alsa-utils alsa-lib
-echo "  Installing some useful desktop shit"
-arch-chroot /mnt pacman -Syy dunst i3lock rofi redshift scrot
-udiskie `#Automount`
-echo "  Installing python"
-arch-chroot /mnt pacman -Syy python python2 python-pip python2-pip
-echo "  Installing java"
-arch-chroot /mnt pacman -Syy jdk8-openjdk java-openjfx
-echo "  Installing mpv"
-arch-chroot /mnt pacman -Syy mpv
-echo "  Installing the login manager"
-arch-chroot /mnt pacman -Syy lightdm
-zip unzip unrar `#Compression` \
-htop `#Sys info` \
-openssh `#SSH` \
-rsync `#Sync files` \
-exfat-utils `#Mount exfat`
-ntfs-3g `#Read and write ntfs` \
-unclutter `#Hide the mouse` \
-powertop acpi tlp `#Battery` \
 
-libreoffice-fresh `#Word processor` \
-gimp `#Graphical editor` \
-newsbeuter `#Rss` \
-gtk-engine-murrine `#Gtk`
+echo "  Installing pacaur"
+arch-chroot /mnt yaourt -S --noconfirm pacaur
 
-echo -e "Yaourt"
-yaourt -S \
+arch-chroot /mnt pacaur -Sy --noconfirm
 concalc `#CLI calculator` \
 libnotify-id `#Notifications` \
 lemonbar-xft-git `#Bar` \
 hsetroot `#Wallpaper` \
-zeronet-git `#Decentralize internet` \
 kpcli `#Keepass` \
 addic7ed-cli `#Subtitles` \
 rtv `#Reddit` \
-adwaita-compact-gtk-theme `#Gtk` \
 torrentflix peerflix
 firefox-nightly
 nnn
