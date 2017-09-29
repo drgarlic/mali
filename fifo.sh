@@ -17,6 +17,8 @@ then
   exit 1
 fi
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
 do
@@ -27,6 +29,8 @@ do
   sleep 5
 done
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Checking if booted as bios or uefi..."
 ls /sys/firmware/efi/efivars > /dev/null
 if [ $? = 0 ]
@@ -36,12 +40,18 @@ else
   uefi=false
 fi
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Updating the system clock..."
 timedatectl set-ntp true
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
@@ -62,6 +72,8 @@ sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
@@ -78,6 +90,8 @@ echo -e "Formatting the \"arch\" partition..."
 sd3=$sd\3
 mkfs.ext4 -F /dev/$sd3 > /dev/null
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo -e "  Mounting \"/mnt\"..."
 mount /dev/$sd3 /mnt
 echo -e "  Creating \"/mnt/boot\"..."
@@ -89,29 +103,41 @@ mount /dev/$sd1 /mnt/boot
 echo -e "  Mounting \"/mnt/home\"..."
 mount /dev/$sd3 /mnt/home
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo -e "\n\n    Chapter III - Installation\n"
 
 echo "  Installing the base packages..."
 pacstrap /mnt base base-devel > /dev/null 2>&1
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
 
 echo "  Generating the fstab file..."
 genfstab -U /mnt >> /mnt/etc/fstab
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Setting the time..."
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
 arch-chroot /mnt hwclock --systohc --utc
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Setting the language..."
 arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
 arch-chroot /mnt locale-gen
 arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Creating the hostname..."
 read -p "  Enter a hostname : " hostnm
 arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
@@ -166,8 +192,12 @@ then
   arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput
 fi
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Installing pacaur"
 arch-chroot /mnt yaourt -S --noconfirm pacaur
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 arch-chroot /mnt pacaur -Sy --noconfirm \
 concalc `#CLI calculator` \
@@ -182,6 +212,8 @@ firefox-nightly \
 nnn \
 openbox-patched
 
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
 read -p "  Enter a username: " usr
@@ -191,6 +223,8 @@ arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
 echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "  Setting the boot loader..."
 if [ "$uefi" = true ]
@@ -211,6 +245,8 @@ else
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
+
+read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 read -p "\n\n  Done.\n\n  Press enter to continue"
 umount -R /mnt
