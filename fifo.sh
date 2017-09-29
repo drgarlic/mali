@@ -13,7 +13,7 @@ wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
 while [ "$wifi" = "y" ]
 do
-  wifi-menu > /dev/null
+  wifi-menu
   if [ $? != 0 ]
   then
     read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
@@ -48,7 +48,7 @@ timedatectl set-ntp true
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
-read -p "  Enter the name of the disered path (Example : sda): " sd
+read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/sdb > /dev/null
