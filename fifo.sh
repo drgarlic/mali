@@ -4,7 +4,7 @@ clear
 echo -e "\n    Welcome.
   This script will guide you during this very painful installation of Arch Linux.
   Put your belt on, take a deep breath and please try not to panic."
-read -p "\n  Press enter to continue"
+read -p -e "\n  Press enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
