@@ -11,18 +11,22 @@ echo -e "\n\n    Chapter I - Preparations\n"
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
-while [ "$wifi" = "y" ]
-do
-  wifi-menu
-  if [ $? != 0 ]
-  then
-    read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
-    again=${again,,}
-    wifi=${again::1}
-  else
-    wifi='n'
-  fi
-done
+if [ "$wifi" = "y" ]
+then
+  echo "  Then stop the script and relaunch after you've used wifi-menu"
+fi
+# while [ "$wifi" = "y" ]
+# do
+#   wifi-menu
+#   if [ $? != 0 ]
+#   then
+#     read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
+#     again=${again,,}
+#     wifi=${again::1}
+#   else
+#     wifi='n'
+#   fi
+# done
 
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
