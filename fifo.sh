@@ -211,10 +211,10 @@ then
 else
   arch-chroot /mnt pacman -S grub
   mkinitcpio -p linux
-  arch-chroot /mnt grub-install  --no-floppy --recheck --target=i386-pc /dev/$sd
+  arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd
   if [ $? != 0 ]
   then
-    arch-chroot /mnt grub-install  --no-floppy --recheck --target=i386-pc /dev/$sd
+    arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
