@@ -16,18 +16,6 @@ then
   echo "  Please launch wifi-menu before starting the script"
   exit 1
 fi
-# while [ "$wifi" = "y" ]
-# do
-#   wifi-menu
-#   if [ $? != 0 ]
-#   then
-#     read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
-#     again=${again,,}
-#     wifi=${again::1}
-#   else
-#     wifi='n'
-#   fi
-# done
 
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
