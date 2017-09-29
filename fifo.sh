@@ -6,19 +6,42 @@ echo -e "\n    Welcome.
   Put your belt on, take a deep breath and please try not to panic."
 read -p "\n  Press enter to continue"
 
-
-
 echo -e "\n\n    Chapter I - Preparations\n"
+
+read -p "  Do you want to use wifi (Y/n)? " $wifi
+wifi=${wifi,,}  #Lowercase
+wifi=${wifi::1} #First letter
+while [ $wifi = 'y' ]
+do
+  wifi-menu > /dev/null
+  if [ $? != 0 ]
+  then
+    read -p "  Do you want to try again (Y/n)? " $try
+    try=${try,,}
+    wifi=${try::1}
+  else
+    wifi='n'
+  fi
+fi
+
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org > /dev/null
 do
-  echo -e "\nPlug an ethernet cable"
-  read -p "Press enter to continue"
+  echo -e "  Plug an ethernet cable"
+  read -p "  Press enter to continue"
   systemctl stop dhcpcd
   systemcll start dhcpcd
   sleep 5
-  ping -c 1 archlinux.org > /dev/null
 done
+
+echo "  Checking if booted as bios or uefi..."
+ls /sys/firmware/efi/efivars 2> /dev/null
+if [ $? = 0 ]
+then
+  uefi=true
+else
+  uefi=false
+fi
 
 echo "  Updating the system clock..."
 timedatectl set-ntp true
@@ -30,7 +53,12 @@ read -p "  Enter the name of the disered path (Example : sda): " sd
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/sdb > /dev/null
 echo -e "  Formatting the \"boot\" partition..."
-sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd > /dev/null
+if [ uefi = true ]
+then
+  sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd > /dev/null
+else
+  sgdisk -n 0:0:+500M -t 0:ef02 -c 0:"boot" /dev/$sd > /dev/null
+fi
 ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
 echo -e "  Formatting the \"swap\" partition..."
 sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd > /dev/null
@@ -43,7 +71,12 @@ fdisk -l /dev/$sd > /dev/null
 
 sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
-mkfs.fat -F32 /dev/$sd1 > /dev/null
+if [ uefi = true ]
+then
+  mkfs.fat -F32 /dev/$sd1 > /dev/null
+else
+  mkfs.ext2 -F /dev/$sd1 > /dev/null
+fi
 echo -e "  Formatting the \"swap\" partition..."
 sd2=$sd\2
 mkswap /dev/$sd2 > /dev/null
@@ -180,11 +213,13 @@ then
   initrd /intel-ucode.img
   initrd /initramfs-linux.img
   options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
-else if
+else
   arch-chroot /mnt pacman -S grub
-  arch-chroot /mnt grub-install --boot-directory=/boot --recheck --debug --target=i386-pc /dev/$sd
-  if [ $? != 0 ]; then
-    arch-chroot /mnt grub-install --boot-directory=/boot --recheck --debug --force --target=i386-pc /dev/$sd
+  mkinitcpio -p linux
+  arch-chroot /mnt grub-install  --no-floppy --recheck --target=i386-pc /dev/$sd
+  if [ $? != 0 ]
+  then
+    arch-chroot /mnt grub-install  --no-floppy --recheck --target=i386-pc /dev/$sd
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
