@@ -14,6 +14,7 @@ wifi=${wifi::1} #First letter
 if [ "$wifi" = "y" ]
 then
   echo "  Then stop the script and relaunch after you've used wifi-menu"
+  read -p "`echo -e "\n  "`Press enter to continue"
 fi
 # while [ "$wifi" = "y" ]
 # do
