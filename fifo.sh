@@ -11,7 +11,7 @@ echo -e "\n\n    Chapter I - Preparations\n"
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
-while [ $wifi = "y" ]
+while [ $wifi -eq "y" ]
 do
   wifi-menu > /dev/null
   if [ $? != 0 ]
