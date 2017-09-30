@@ -8,14 +8,21 @@ read -p "`echo -e "\n  "`Press enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
-# read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" $wifi
-# wifi=${wifi,,}  #Lowercase
-# wifi=${wifi::1} #First letter
-# if [ "$wifi" = "y" ]
-# then
-#   echo "  Please launch wifi-menu before starting the script"
-#   exit 1
-# fi
+read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
+wifi=${wifi,,}  #Lowercase
+wifi=${wifi::1} #First letter
+while [ "$wifi" = "y" ]
+do
+  wifi-menu
+  if [ $? != 0 ]
+  then
+    read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
+    again=${again,,}
+    wifi=${again::1}
+  else
+    wifi="n"
+  fi
+done
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
@@ -109,7 +116,7 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo -e "\n\n    Chapter III - Installation\n"
 
 echo "  Installing the base packages..."
-pacstrap /mnt base base-devel > /dev/null 2>&1
+pacstrap /mnt base base-devel > /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
