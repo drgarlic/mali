@@ -150,51 +150,52 @@ arch-chroot /mnt echo "[archlinuxfr]
 SigLevel = Never
 Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
 echo "  Updating Pacman..."
-arch-chroot /mnt pacman -Sy > /dev/null
+arch-chroot /mnt pacman -Sy &> /dev/null
 echo "  Installing Yaourt..."
-arch-chroot /mnt pacman -Syy --noconfirm yaourt > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm yaourt &> /dev/null
 echo "  Installing the Intel microcode package..."
-arch-chroot /mnt pacman -Syy --noconfirm intel-ucode > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm intel-ucode &> /dev/null
 echo "  Installing the network manager..."
-arch-chroot /mnt pacman -Syy --noconfirm networkmanager 
-arch-chroot /mnt systemctl enable NetworkManager
+arch-chroot /mnt pacman -Syy --noconfirm networkmanager &> /dev/null
+arch-chroot /mnt systemctl enable NetworkManager &> /dev/null
 echo "  Installing wifi packages..."
-arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog &> /dev/null
 echo "  Installing video drivers..."
-arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa > /dev/null
-echo "  Installing X"
-arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa &> /dev/null
+echo "  Installing X..."
+arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock &> /dev/null
 echo "  Installing the terminal..."
-arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt > /dev/null
-echo "  Installing the torrent client"
-arch-chroot /mnt pacman -Syy --noconfirm qbittorrent > /dev/null
-echo "  Installing the audio manager"
-arch-chroot /mnt pacman -Syy --noconfirm alsa-utils alsa-lib > /dev/null
-echo "  Installing some useful desktop shit"
-arch-chroot /mnt pacman -Syy --noconfirm dunst i3lock rofi redshift scrot unclutter > /dev/null
-echo "  Installing Python"
-arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip > /dev/null
-echo "  Installing Java"
-arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx > /dev/null
-echo "  Installing the video player"
-arch-chroot /mnt pacman -Syy --noconfirm mpv > /dev/null
-echo "  Installing the login manager"
-arch-chroot /mnt pacman -Syy --noconfirm lightdm > /dev/null
-echo "  Installing Libre Office"
-arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh > /dev/null
-echo "  Installing Gimp"
-arch-chroot /mnt pacman -Syy --noconfirm gimp > /dev/null
-echo "  Installing compression software"
-arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip > /dev/null
-echo "  Installing external harddrive related software"
-exfat-utils ntfs-3g udiskie > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt &> /dev/null
+echo "  Installing the torrent client..."
+arch-chroot /mnt pacman -Syy --noconfirm qbittorrent &> /dev/null
+echo "  Installing the audio manager..."
+arch-chroot /mnt pacman -Syy --noconfirm alsa-utils alsa-lib &> /dev/null
+echo "  Installing some useful desktop shit..."
+arch-chroot /mnt pacman -Syy --noconfirm dunst i3lock rofi redshift scrot unclutter &> /dev/null
+echo "  Installing Python..."
+arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip &> /dev/null
+echo "  Installing Java..."
+arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx &> /dev/null
+echo "  Installing the video player..."
+arch-chroot /mnt pacman -Syy --noconfirm mpv &> /dev/null
+echo "  Installing the login manager..."
+arch-chroot /mnt pacman -Syy --noconfirm lightdm &> /dev/null
+echo "  Installing Libre Office..."
+arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh &> /dev/null
+echo "  Installing Gimp..."
+arch-chroot /mnt pacman -Syy --noconfirm gimp &> /dev/null
+echo "  Installing compression software..."
+arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip &> /dev/null
+echo "  Installing external harddrive related software..."
+arch-chroot /mnt pacman -Syy --noconfirm exfat-utils ntfs-3g udiskie &> /dev/null
 if [ $laptop = true ]
 then
-  echo "  Installing the battery manager"
-  arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp > /dev/null
+  echo "  Installing the battery manager..."
+  arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp &> /dev/null
   echo "  Installing touchpad packages..."
-  arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput > /dev/null
+  arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput &> /dev/null
 fi
+arch-chroot /mnt pacman -Syyu--noconfirm &> /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
