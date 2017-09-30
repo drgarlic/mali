@@ -63,17 +63,17 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
-echo -e "  Formatting the \"boot\" partition..."
+echo -e "  Creating the \"boot\" partition..."
 if [ "$uefi" = true ]
 then
-  sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd > /dev/null
+  sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
 else
-  sgdisk -n 0:0:+500M -t 0:ef02 -c 0:"boot" /dev/$sd > /dev/null
+  sgdisk -n 0:0:+500M -t 0:ef02 -c 0:"boot" /dev/$sd &> /dev/null
 fi
 ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
-echo -e "  Formatting the \"swap\" partition..."
+echo -e "  Creating the \"swap\" partition..."
 sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
-echo -e "  Formatting the \"arch\" partition..."
+echo -e "  Creating the \"arch\" partition..."
 sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
 echo "  Updating the partition table..."
 sgdisk -p /dev/$sd > /dev/null
@@ -86,17 +86,17 @@ sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
 then
-  mkfs.fat -F32 /dev/$sd1 > /dev/null
+  mkfs.fat -F32 /dev/$sd1 &> /dev/null
 else
-  mkfs.ext2 -F /dev/$sd1 > /dev/null
+  mkfs.ext2 -F /dev/$sd1 &> /dev/null
 fi
 echo -e "  Formatting the \"swap\" partition..."
 sd2=$sd\2
-mkswap /dev/$sd2 > /dev/null
-swapon /dev/$sd2 > /dev/null
-echo -e "Formatting the \"arch\" partition..."
+mkswap /dev/$sd2 &> /dev/null
+swapon /dev/$sd2 &> /dev/null
+echo -e "  Formatting the \"arch\" partition..."
 sd3=$sd\3
-mkfs.ext4 -F /dev/$sd3 2> /dev/null
+mkfs.ext4 -F /dev/$sd3 &> /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
