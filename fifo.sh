@@ -64,7 +64,7 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
 echo -e "  Creating the \"boot\" partition..."
-if [ "$uefi" = true ]
+if [ $uefi = true ]
 then
   sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
 else
@@ -116,7 +116,7 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo -e "\n\n    Chapter III - Installation\n"
 
 echo "  Installing the base packages..."
-pacstrap /mnt base base-devel
+pacstrap /mnt base base-devel &> /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
@@ -184,8 +184,6 @@ echo "  Installing the video player"
 arch-chroot /mnt pacman -Syy --noconfirm mpv
 echo "  Installing the login manager"
 arch-chroot /mnt pacman -Syy --noconfirm lightdm
-echo "  Installing the battery manager"
-arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp
 echo "  Installing Libre Office"
 arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh
 echo "  Installing Gimp"
@@ -196,6 +194,8 @@ echo "  Installing external harddrive related software"
 exfat-utils ntfs-3g udiskie
 if [ $laptop = true ]
 then
+  echo "  Installing the battery manager"
+  arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp
   echo "  Installing touchpad packages..."
   arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput
 fi
@@ -235,7 +235,7 @@ arch-chroot /mnt passwd $usr
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "  Setting the boot loader..."
-if [ "$uefi" = true ]
+if [ $uefi = true ]
 then
   arch-chroot /mnt bootctl install > /dev/null
   arch-chroot /mnt echo -e "title Arch Linux
