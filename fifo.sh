@@ -147,14 +147,14 @@ arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
 
 echo "  Enter root's password: "
-arch-chroot /mnt passwd
+until arch-chroot /mnt passwd; do; done
 read -p "  Enter a username: " usr
 echo "  Creating the user..."
 arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
 echo "  Enter the user's password: "
-arch-chroot /mnt passwd $usr
+until arch-chroot /mnt passwd $usr; do; done
 
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
