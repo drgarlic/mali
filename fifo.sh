@@ -234,25 +234,25 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo -e "  Setting the boot loader..."
 if [ $uefi = true ]
 then
-  arch-chroot /mnt bootctl install > /dev/null
+  arch-chroot /mnt bootctl install &> /dev/null
   arch-chroot /mnt echo -e "title Arch Linux
-  linux /vmlinuz-linux
-  initrd /intel-ucode.img
-  initrd /initramfs-linux.img
-  options root=/dev/$sd3 pcie_aspm=force rw" >> /mnt/boot/loader/entries/arch.conf
+linux /vmlinuz-linux
+initrd /intel-ucode.img
+initrd /initramfs-linux.img
+options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
   arch-chroot /mnt pacman -S grub
-  mkinitcpio -p linux
-  arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd
+  mkinitcpio -p linux &> /dev/null
+  arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd &> /dev/null
   if [ $? != 0 ]
   then
-    arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd
+    arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd &> /dev/null
   fi
-  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
 fi
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
-read -p "\n\n  Done.\n\n  Press enter to continue"
+read -p "`echo "\n\n  Done.\n\n"`  Press enter to continue"
 umount -R /mnt
 shutdown
