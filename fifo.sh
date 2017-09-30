@@ -197,12 +197,14 @@ then
 fi
 arch-chroot /mnt pacman -Syyu--noconfirm &> /dev/null
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
-echo "  Installing pacaur"
-arch-chroot /mnt yaourt -S --noconfirm pacaur
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
+echo "  Installing Yaourt..."
+mkdir /home/build
+chgrp nobody /home/build
+chmod g+ws /home/build
+setfacl -m u::rwx,g::rwx /home/build
+setfacl -d --set u::rwx,g::rwx,o::- /home/build
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower &> /dev/null
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur &> /dev/null
 
 arch-chroot /mnt pacaur -Sy --noconfirm \
 concalc `#CLI calculator` \
