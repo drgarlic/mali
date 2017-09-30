@@ -198,15 +198,15 @@ fi
 arch-chroot /mnt pacman -Syyu--noconfirm &> /dev/null
 
 echo "  Installing Yaourt..."
-mkdir /home/build
-chgrp nobody /home/build
-chmod g+ws /home/build
-setfacl -m u::rwx,g::rwx /home/build
-setfacl -d --set u::rwx,g::rwx,o::- /home/build
+arch-chroot /mnt mkdir /home/build
+arch-chroot /mnt chgrp nobody /home/build
+arch-chroot /mnt chmod g+ws /home/build
+arch-chroot /mnt setfacl -m u::rwx,g::rwx /home/build
+arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
 arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower &> /dev/null
 arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur &> /dev/null
 
-arch-chroot /mnt pacaur -Sy --noconfirm \
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm \
 concalc `#CLI calculator` \
 libnotify-id `#Notifications` \
 lemonbar-xft-git `#Bar` \
@@ -216,8 +216,7 @@ addic7ed-cli `#Subtitles` \
 rtv `#Reddit` \
 torrentflix peerflix \
 firefox-nightly \
-nnn \
-openbox-patched
+nnn
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
