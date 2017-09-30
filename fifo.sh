@@ -116,7 +116,7 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo -e "\n\n    Chapter III - Installation\n"
 
 echo "  Installing the base packages..."
-pacstrap /mnt base base-devel > /dev/null
+pacstrap /mnt base base-devel
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
