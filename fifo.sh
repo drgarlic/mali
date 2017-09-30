@@ -43,8 +43,10 @@ ls /sys/firmware/efi/efivars > /dev/null
 if [ $? = 0 ]
 then
   uefi=true
+  laptop=false
 else
   uefi=false
+  laptop=true
 fi
 
 # pacman -Sy --noconfirm acpi > /dev/null 
@@ -72,7 +74,7 @@ sd=sd$sd
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
 echo -e "  Creating the \"boot\" partition..."
-if [ $uefi = true ]
+if [ "$uefi" = true ]
 then
   sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
 else
@@ -191,7 +193,7 @@ echo "  Installing compression software..."
 arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip &> /dev/null
 echo "  Installing external harddrive related software..."
 arch-chroot /mnt pacman -Syy --noconfirm exfat-utils ntfs-3g udiskie &> /dev/null
-if [ $laptop = true ]
+if [ "$laptop" = true ]
 then
   echo "  Installing the battery manager..."
   arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp &> /dev/null
@@ -232,7 +234,7 @@ echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
 
 echo -e "  Setting the boot loader..."
-if [ $uefi = true ]
+if [ "$uefi" = true ]
 then
   arch-chroot /mnt bootctl install &> /dev/null
   arch-chroot /mnt echo -e "title Arch Linux
