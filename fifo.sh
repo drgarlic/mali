@@ -43,6 +43,14 @@ else
   uefi=false
 fi
 
+# pacman -Sy --noconfirm acpi > /dev/null 
+# if [ $? = 0 ]
+# then
+#   laptop=true
+# else
+#   laptop=false
+# fi
+
 echo "  Updating the system clock..."
 timedatectl set-ntp true
 
