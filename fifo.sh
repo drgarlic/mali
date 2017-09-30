@@ -11,6 +11,10 @@ echo -e "\n\n    Chapter I - Preparations\n"
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
+while [[ "$wifi" != "y" && "$wifi" != "n" ]]
+do
+  read -p "  Wrong answer, try again (Y/n) `echo $'\n> '`" wifi
+done
 while [ "$wifi" = "y" ]
 do
   wifi-menu
@@ -57,6 +61,11 @@ timedatectl set-ntp true
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> sd'`" sd
+sd=${sd,,}
+while [[ "$sd" != [a-e] ]]
+do
+  read -p "  Wrong answer, try again `echo $'\n> '`" sd
+done
 sd=sd$sd
 
 echo "  Destroying the partition table..."
