@@ -202,7 +202,7 @@ then
 fi
 arch-chroot /mnt pacman -Syyu--noconfirm &> /dev/null
 
-echo "  Installing Yaourt..."
+echo "  Installing Pacaur..."
 arch-chroot /mnt mkdir /home/build
 arch-chroot /mnt chgrp nobody /home/build
 arch-chroot /mnt chmod g+ws /home/build
@@ -211,6 +211,7 @@ arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
 arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower &> /dev/null
 arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur &> /dev/null
 
+echo "  Installing extras..."
 arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm \
 concalc `#CLI calculator` \
 libnotify-id `#Notifications` \
