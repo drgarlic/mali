@@ -14,6 +14,8 @@ wifi=${wifi::1} #First letter
 while [[ "$wifi" != "y" && "$wifi" != "n" ]]
 do
   read -p "  Wrong answer `echo $'\n> '`" wifi
+  wifi=${wifi,,}
+  wifi=${wifi::1}
 done
 while [ "$wifi" = "y" ]
 do
