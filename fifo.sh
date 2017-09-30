@@ -264,4 +264,4 @@ fi
 
 read -p "`echo -e "\n\n  Done.\n\n"`  Press enter to continue"
 umount -R /mnt
-shutdown
+shutdown -h now
