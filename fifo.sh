@@ -49,7 +49,7 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
-read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
+read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> sd'`" sd
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
