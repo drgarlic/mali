@@ -135,8 +135,8 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Setting the language..."
 arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
-arch-chroot /mnt locale-gen
-arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf
+arch-chroot /mnt locale-gen > /dev/null
+arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf > /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
@@ -150,13 +150,13 @@ read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
 arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
-arch-chroot /mnt echo "[archlinuxfr]" >> /mnt/etc/pacman.conf
-arch-chroot /mnt echo "SigLevel = Never" >> /mnt/etc/pacman.conf
-arch-chroot /mnt echo "Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
+arch-chroot /mnt echo "[archlinuxfr]
+SigLevel = Never
+Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
 echo "  Updating Pacman..."
 arch-chroot /mnt pacman -Sy > /dev/null
 echo "  Installing Yaourt..."
-arch-chroot /mnt pacman -Syy yaourt > /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm yaourt > /dev/null
 echo "  Installing the Intel microcode package..."
 arch-chroot /mnt pacman -Syy --noconfirm intel-ucode > /dev/null
 echo "  Installing the network manager..."
