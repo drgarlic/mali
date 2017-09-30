@@ -24,8 +24,6 @@ do
   fi
 done
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Checking the internet connection..."
 until ping -c 1 archlinux.org &> /dev/null
 do
@@ -36,8 +34,6 @@ do
   sleep 5
 done
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Checking if booted as bios or uefi..."
 ls /sys/firmware/efi/efivars > /dev/null
 if [ $? = 0 ]
@@ -47,19 +43,13 @@ else
   uefi=false
 fi
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Updating the system clock..."
 timedatectl set-ntp true
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> sd'`" sd
 sd=sd$sd
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
@@ -80,8 +70,6 @@ sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
@@ -98,8 +86,6 @@ echo -e "  Formatting the \"arch\" partition..."
 sd3=$sd\3
 mkfs.ext4 -F /dev/$sd3 &> /dev/null
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo -e "  Mounting \"/mnt\"..."
 mount /dev/$sd3 /mnt
 echo -e "  Creating \"/mnt/boot\"..."
@@ -111,41 +97,29 @@ mount /dev/$sd1 /mnt/boot
 echo -e "  Mounting \"/mnt/home\"..."
 mount /dev/$sd3 /mnt/home
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo -e "\n\n    Chapter III - Installation\n"
 
 echo "  Installing the base packages..."
 pacstrap /mnt base base-devel &> /dev/null
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
 
 echo "  Generating the fstab file..."
 genfstab -U /mnt >> /mnt/etc/fstab
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Setting the time..."
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
 arch-chroot /mnt hwclock --systohc --utc
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Setting the language..."
 arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
 arch-chroot /mnt locale-gen > /dev/null
 arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf > /dev/null
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Creating the hostname..."
 read -p "  Enter a hostname : " hostnm
 arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
@@ -169,35 +143,35 @@ arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa > /dev/null
 echo "  Installing X"
 arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock > /dev/null
 echo "  Installing the terminal..."
-arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt
+arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt > /dev/null
 echo "  Installing the torrent client"
-arch-chroot /mnt pacman -Syy --noconfirm qbittorrent
+arch-chroot /mnt pacman -Syy --noconfirm qbittorrent > /dev/null
 echo "  Installing the audio manager"
-arch-chroot /mnt pacman -Syy --noconfirm alsa-utils alsa-lib
+arch-chroot /mnt pacman -Syy --noconfirm alsa-utils alsa-lib > /dev/null
 echo "  Installing some useful desktop shit"
-arch-chroot /mnt pacman -Syy --noconfirm dunst i3lock rofi redshift scrot unclutter
+arch-chroot /mnt pacman -Syy --noconfirm dunst i3lock rofi redshift scrot unclutter > /dev/null
 echo "  Installing Python"
-arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip
+arch-chroot /mnt pacman -Syy --noconfirm python python2 python-pip python2-pip > /dev/null
 echo "  Installing Java"
-arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx
+arch-chroot /mnt pacman -Syy --noconfirm jdk8-openjdk java-openjfx > /dev/null
 echo "  Installing the video player"
-arch-chroot /mnt pacman -Syy --noconfirm mpv
+arch-chroot /mnt pacman -Syy --noconfirm mpv > /dev/null
 echo "  Installing the login manager"
-arch-chroot /mnt pacman -Syy --noconfirm lightdm
+arch-chroot /mnt pacman -Syy --noconfirm lightdm > /dev/null
 echo "  Installing Libre Office"
-arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh
+arch-chroot /mnt pacman -Syy --noconfirm libreoffice-fresh > /dev/null
 echo "  Installing Gimp"
-arch-chroot /mnt pacman -Syy --noconfirm gimp
+arch-chroot /mnt pacman -Syy --noconfirm gimp > /dev/null
 echo "  Installing compression software"
-arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip
+arch-chroot /mnt pacman -Syy --noconfirm zip unzip unrar p7zip > /dev/null
 echo "  Installing external harddrive related software"
-exfat-utils ntfs-3g udiskie
+exfat-utils ntfs-3g udiskie > /dev/null
 if [ $laptop = true ]
 then
   echo "  Installing the battery manager"
-  arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp
+  arch-chroot /mnt pacman -Syy --noconfirm powertop acpi tlp > /dev/null
   echo "  Installing touchpad packages..."
-  arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput
+  arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput > /dev/null
 fi
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
