@@ -220,27 +220,27 @@ then
 fi
 arch-chroot /mnt pacman -Syyu --noconfirm &> /dev/null
 
-echo "  Installing Pacaur..."
-arch-chroot /mnt mkdir /home/build
-arch-chroot /mnt chgrp nobody /home/build
-arch-chroot /mnt chmod g+ws /home/build
-arch-chroot /mnt setfacl -m u::rwx,g::rwx /home/build
-arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower > /dev/null
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur > /dev/null
+# echo "  Installing Pacaur..."
+# arch-chroot /mnt mkdir /home/build
+# arch-chroot /mnt chgrp nobody /home/build
+# arch-chroot /mnt chmod g+ws /home/build
+# arch-chroot /mnt setfacl -m u::rwx,g::rwx /home/build
+# arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower > /dev/null
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur > /dev/null
 
-echo "  Installing Firefox..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm firefox-nightly > /dev/null
-echo "  Installing Netflix..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm torrentflix peerflix addic7ed-cli > /dev/null
-echo "  Installing Reddit..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm rtv > /dev/null
-echo "  Installing the password manager..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm kpcli > /dev/null
-echo "  Installing a few more useful desktop shit..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm libnotify-id lemonbar-xft-git nnn > /dev/null
-echo "  Installing extras..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm concalc hsetroot > /dev/null
+# echo "  Installing Firefox..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm firefox-nightly > /dev/null
+# echo "  Installing Netflix..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm torrentflix peerflix addic7ed-cli > /dev/null
+# echo "  Installing Reddit..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm rtv > /dev/null
+# echo "  Installing the password manager..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm kpcli > /dev/null
+# echo "  Installing a few more useful desktop shit..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm libnotify-id lemonbar-xft-git nnn > /dev/null
+# echo "  Installing extras..."
+# arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm concalc hsetroot > /dev/null
 
 echo -e "  Setting the boot loader..."
 if [ "$uefi" = true ]
@@ -262,6 +262,6 @@ else
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
 fi
 
-read -p "`echo "\n\n  Done.\n\n"`  Press enter to continue"
+read -p "`echo -e "\n\n  Done.\n\n"`  Press enter to continue"
 umount -R /mnt
 shutdown
