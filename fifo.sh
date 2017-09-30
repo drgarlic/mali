@@ -27,7 +27,7 @@ done
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo "  Checking the internet connection..."
-until ping -c 1 archlinux.org > /dev/null
+until ping -c 1 archlinux.org &> /dev/null
 do
   echo -e "  Plug an ethernet cable"
   read -p "  Press enter to continue"
