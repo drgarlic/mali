@@ -13,7 +13,7 @@ wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
 while [[ "$wifi" != "y" && "$wifi" != "n" ]]
 do
-  read -p "  Wrong answer, try again (Y/n) `echo $'\n> '`" wifi
+  read -p "  Wrong answer `echo $'\n> '`" wifi
 done
 while [ "$wifi" = "y" ]
 do
@@ -64,7 +64,8 @@ read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> sd'`" 
 sd=${sd,,}
 while [[ "$sd" != [a-e] ]]
 do
-  read -p "  Wrong answer, try again `echo $'\n> '`" sd
+  read -p "  Wrong answer `echo $'\n> '`" sd
+  sd=${sd,,}
 done
 sd=sd$sd
 
