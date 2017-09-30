@@ -208,21 +208,21 @@ arch-chroot /mnt chgrp nobody /home/build
 arch-chroot /mnt chmod g+ws /home/build
 arch-chroot /mnt setfacl -m u::rwx,g::rwx /home/build
 arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower &> /dev/null
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur &> /dev/null
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower #&> /dev/null
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur #&> /dev/null
 
+echo "  Installing Firefox..."
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm firefox-nightly
+echo "  Installing Netflix..."
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm torrentflix peerflix addic7ed-cli
+echo "  Installing Reddit..."
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm rtv
+echo "  Installing the password manager..."
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm kpcli
+echo "  Installing a few more useful desktop shit..."
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm libnotify-id lemonbar-xft-git nnn
 echo "  Installing extras..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm \
-concalc `#CLI calculator` \
-libnotify-id `#Notifications` \
-lemonbar-xft-git `#Bar` \
-hsetroot `#Wallpaper` \
-kpcli `#Keepass` \
-addic7ed-cli `#Subtitles` \
-rtv `#Reddit` \
-torrentflix peerflix \
-firefox-nightly \
-nnn
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm concalc hsetroot
 
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
