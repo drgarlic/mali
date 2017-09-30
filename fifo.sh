@@ -122,7 +122,7 @@ cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
 rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
 
-echo "  Installing the base packages..."
+echo "  Installing the operating system..."
 pacstrap /mnt base base-devel &> /dev/null
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
