@@ -85,10 +85,10 @@ fi
 echo -e "  Formatting the \"swap\" partition..."
 sd2=$sd\2
 mkswap /dev/$sd2 > /dev/null
-swapon /dev/$sd2
+swapon /dev/$sd2 > /dev/null
 echo -e "Formatting the \"arch\" partition..."
 sd3=$sd\3
-mkfs.ext4 -F /dev/$sd3 > /dev/null
+mkfs.ext4 -F /dev/$sd3 2> /dev/null
 
 read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
