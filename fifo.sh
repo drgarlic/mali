@@ -146,6 +146,17 @@ read -p "  Enter a hostname : " hostnm
 arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
 arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
 
+echo "  Enter root's password: "
+arch-chroot /mnt passwd
+read -p "  Enter a username: " usr
+echo "  Creating the user..."
+arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
+arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
+echo "  Enter the user's password: "
+arch-chroot /mnt passwd $usr
+
+
 echo -e "  Updating \"pacman.conf\"..."
 arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
 arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
@@ -200,7 +211,7 @@ then
   echo "  Installing touchpad packages..."
   arch-chroot /mnt pacman -Syy --noconfirm xf86-input-synaptics xf86-input-libinput &> /dev/null
 fi
-arch-chroot /mnt pacman -Syyu--noconfirm &> /dev/null
+arch-chroot /mnt pacman -Syyu --noconfirm &> /dev/null
 
 echo "  Installing Pacaur..."
 arch-chroot /mnt mkdir /home/build
@@ -208,31 +219,21 @@ arch-chroot /mnt chgrp nobody /home/build
 arch-chroot /mnt chmod g+ws /home/build
 arch-chroot /mnt setfacl -m u::rwx,g::rwx /home/build
 arch-chroot /mnt setfacl -d --set u::rwx,g::rwx,o::- /home/build
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower #&> /dev/null
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur #&> /dev/null
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm --m-arg "--skippgpcheck" cower > /dev/null
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm pacaur > /dev/null
 
 echo "  Installing Firefox..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm firefox-nightly
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm firefox-nightly > /dev/null
 echo "  Installing Netflix..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm torrentflix peerflix addic7ed-cli
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm torrentflix peerflix addic7ed-cli > /dev/null
 echo "  Installing Reddit..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm rtv
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm rtv > /dev/null
 echo "  Installing the password manager..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm kpcli
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm kpcli > /dev/null
 echo "  Installing a few more useful desktop shit..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm libnotify-id lemonbar-xft-git nnn
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm libnotify-id lemonbar-xft-git nnn > /dev/null
 echo "  Installing extras..."
-arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm concalc hsetroot
-
-echo "  Enter root's password: "
-arch-chroot /mnt passwd
-read -p "  Enter a username: " usr
-echo "  Creating the user..."
-arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
-arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
-arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
-echo "  Enter the user's password: "
-arch-chroot /mnt passwd $usr
+arch-chroot /mnt sudo -u nobody yaourt -S --noconfirm concalc hsetroot > /dev/null
 
 echo -e "  Setting the boot loader..."
 if [ "$uefi" = true ]
