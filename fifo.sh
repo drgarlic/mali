@@ -164,6 +164,8 @@ echo "  Installing video drivers..."
 arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa &> /dev/null
 echo "  Installing X..."
 arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock &> /dev/null
+echo "  Installing the window manager..."
+arch-chroot /mnt pacman -Syy --noconfirm openbox &> /dev/null
 echo "  Installing the terminal..."
 arch-chroot /mnt pacman -Syy --noconfirm termite tmux neovim feh htop openssh rsync newsbeuter mutt &> /dev/null
 echo "  Installing the torrent client..."
@@ -218,8 +220,6 @@ torrentflix peerflix \
 firefox-nightly \
 nnn
 
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
-
 echo "  Enter root's password: "
 arch-chroot /mnt passwd
 read -p "  Enter a username: " usr
@@ -229,8 +229,6 @@ arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
 arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
 echo "  Enter the user's password: "
 arch-chroot /mnt passwd $usr
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 echo -e "  Setting the boot loader..."
 if [ $uefi = true ]
@@ -251,8 +249,6 @@ else
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
 fi
-
-read -p "`echo -e "\n  "`Press enter to continue" #DEBUG
 
 read -p "`echo "\n\n  Done.\n\n"`  Press enter to continue"
 umount -R /mnt
