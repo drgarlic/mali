@@ -72,9 +72,9 @@ else
 fi
 ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
 echo -e "  Formatting the \"swap\" partition..."
-sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd > /dev/null 2>$1
+sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
 echo -e "  Formatting the \"arch\" partition..."
-sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd > /dev/null 2>$1
+sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
 echo "  Updating the partition table..."
 sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
