@@ -107,6 +107,11 @@ mount /dev/$sd3 /mnt/home
 
 echo -e "\n\n    Chapter III - Installation\n"
 
+echo "  Updating the mirror list..."
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
+rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+
 echo "  Installing the base packages..."
 pacstrap /mnt base base-devel &> /dev/null
 
