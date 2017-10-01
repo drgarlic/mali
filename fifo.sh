@@ -49,14 +49,6 @@ else
   uefi=false
 fi
 
-# pacman -Sy --noconfirm acpi > /dev/null 
-# if [ $? = 0 ]
-# then
-#   laptop=true
-# else
-#   laptop=false
-# fi
-
 echo "  Updating the system clock..."
 timedatectl set-ntp true
 
@@ -182,7 +174,7 @@ arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog &> /dev/null
 echo "  Installing video drivers..."
 arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa &> /dev/null
 echo "  Installing X..."
-arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-server-utils xorg-xinit xautolock &> /dev/null
+arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-xinit xautolock xorg-xkill &> /dev/null
 
 # echo "  Installing the window manager..."
 # arch-chroot /mnt pacman -Syy --noconfirm openbox &> /dev/null
