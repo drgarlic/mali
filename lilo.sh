@@ -50,10 +50,11 @@ echo "  Installing compression software..."
 pacaur -S --noconfirm --noedit --silent zip unzip unrar p7zip &> /dev/null
 echo "  Installing external harddrive related software..."
 pacaur -S --noconfirm --noedit --silent exfat-utils ntfs-3g udiskie &> /dev/null
-if [ "$laptop" = true ]
+pacaur -S --noconfirm --noedit --silent acpi &> /dev/null
+if [ -d /proc/acpi/battery/BAT* ]
 then
   echo "  Installing the battery manager..."
-  pacaur -S --noconfirm --noedit --silent powertop acpi tlp &> /dev/null
+  pacaur -S --noconfirm --noedit --silent powertop tlp &> /dev/null
   echo "  Installing touchpad packages..."
   pacaur -S --noconfirm --noedit --silent xf86-input-synaptics xf86-input-libinput &> /dev/null
 fi
