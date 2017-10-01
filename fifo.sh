@@ -45,10 +45,8 @@ ls /sys/firmware/efi/efivars > /dev/null
 if [ $? = 0 ]
 then
   uefi=true
-  laptop=false
 else
   uefi=false
-  laptop=true
 fi
 
 # pacman -Sy --noconfirm acpi > /dev/null 
