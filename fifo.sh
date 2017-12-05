@@ -56,12 +56,12 @@ echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 sd=${sd,,}
-while [[ "$sd" != [a-e] ]]
-do
-  read -p "  Wrong answer `echo $'\n> '`" sd
-  sd=${sd,,}
-done
-sd=$sd
+# while [[ "$sd" != [a-e] ]]
+# do
+#   read -p "  Wrong answer `echo $'\n> '`" sd
+#   sd=${sd,,}
+# done
+# sd=$sd
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
