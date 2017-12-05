@@ -56,12 +56,16 @@ echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 sd=${sd,,}
-# while [[ "$sd" != [a-e] ]]
-# do
-#   read -p "  Wrong answer `echo $'\n> '`" sd
-#   sd=${sd,,}
-# done
-# sd=$sd
+while ! [ `lsblk | awk '$6 == "disk"' | awk '{print $1}' | grep $sd` ]
+do
+  read -p "  Wrong answer `echo $'\n> '`" sd
+  sd=${sd,,}
+done
+sd=$sd
+between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed 's/^.*$sd//' | sed 's/.$//'`
+sd1=$sd$between\1
+sd2=$sd$between\2
+sd3=$sd$between\3
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
@@ -82,7 +86,6 @@ sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
 
-sd1=$sd\1
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
 then
@@ -91,11 +94,9 @@ else
   mkfs.ext2 -F /dev/$sd1 &> /dev/null
 fi
 echo -e "  Formatting the \"swap\" partition..."
-sd2=$sd\2
 mkswap /dev/$sd2 &> /dev/null
 swapon /dev/$sd2 &> /dev/null
 echo -e "  Formatting the \"arch\" partition..."
-sd3=$sd\3
 mkfs.ext4 -F /dev/$sd3 &> /dev/null
 
 echo -e "  Mounting \"/mnt\"..."
