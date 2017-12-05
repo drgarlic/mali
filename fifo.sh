@@ -41,7 +41,7 @@ do
 done
 
 echo "  Checking if booted as bios or uefi..."
-ls /sys/firmware/efi/efivars > /dev/null
+ls /sys/firmware/efi/efivars &> /dev/null
 if [ $? = 0 ]
 then
   uefi=true
@@ -54,14 +54,14 @@ timedatectl set-ntp true
 
 echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
-read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> sd'`" sd
+read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 sd=${sd,,}
 while [[ "$sd" != [a-e] ]]
 do
   read -p "  Wrong answer `echo $'\n> '`" sd
   sd=${sd,,}
 done
-sd=sd$sd
+sd=$sd
 
 echo "  Destroying the partition table..."
 sgdisk -Z /dev/$sd > /dev/null
