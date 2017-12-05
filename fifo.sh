@@ -112,10 +112,23 @@ mount /dev/$sd3 /mnt/home
 
 echo -e "\n\n    Chapter III - Installation\n"
 
-echo "  Updating the mirror list..."
-cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
-rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+
+read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" mirror
+mirror=${mirror,,}
+mirror=${mirror::1}
+while [[ "$mirror" != "y" && "$wifi" != "n" ]]
+do
+  read -p "  Wrong answer `echo $'\n> '`" mirror
+  mirror=${mirror,,}
+  mirror=${mirror::1}
+done
+if [ "$mirror" = "y" ]
+then
+  echo "  Updating the mirror list..."
+  cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+  sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
+  rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+fi
 
 echo "  Installing the operating system..."
 pacstrap /mnt base base-devel &> /dev/null
