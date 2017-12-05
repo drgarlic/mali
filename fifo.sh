@@ -56,13 +56,13 @@ echo -e "\n\n    Chapter II - Partitions\n"
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 sd=${sd,,}
-while ! [ `lsblk | awk '$6 == "disk"' | awk '{print $1}' | grep $sd` ]
+while ! [ `lsblk | awk '$6 == "disk"' | awk '{print $1}' | grep -x $sd` ]
 do
   read -p "  Wrong answer `echo $'\n> '`" sd
   sd=${sd,,}
 done
 sd=$sd
-between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed 's/^.*$sd//' | sed 's/.$//'`
+between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed "s/^.*$sd//" | sed 's/.$//'`
 sd1=$sd$between\1
 sd2=$sd$between\2
 sd3=$sd$between\3
