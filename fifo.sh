@@ -87,13 +87,13 @@ partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
 
 echo -e "  Formatting the \"boot\" partition..."
-# if [ "$uefi" = true ]
-# then
-#   mkfs.fat -F32 /dev/$sd1 &> /dev/null
-# else
-#   mkfs.ext2 -F /dev/$sd1 &> /dev/null
-# fi
-mkfs.fat -F32 /dev/$sd1 &> /dev/null
+if [ "$uefi" = true ]
+then
+  mkfs.fat -F32 /dev/$sd1 &> /dev/null
+else
+  mkfs.ext2 -F /dev/$sd1 &> /dev/null
+fi
+# mkfs.fat -F32 /dev/$sd1 &> /dev/null
 echo -e "  Formatting the \"swap\" partition..."
 mkswap /dev/$sd2 &> /dev/null
 swapon /dev/$sd2 &> /dev/null
