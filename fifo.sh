@@ -87,12 +87,13 @@ partprobe /dev/$sd > /dev/null
 fdisk -l /dev/$sd > /dev/null
 
 echo -e "  Formatting the \"boot\" partition..."
-if [ "$uefi" = true ]
-then
-  mkfs.fat -F32 /dev/$sd1 &> /dev/null
-else
-  mkfs.ext2 -F /dev/$sd1 &> /dev/null
-fi
+# if [ "$uefi" = true ]
+# then
+#   mkfs.fat -F32 /dev/$sd1 &> /dev/null
+# else
+#   mkfs.ext2 -F /dev/$sd1 &> /dev/null
+# fi
+mkfs.fat -F32 /dev/$sd1 &> /dev/null
 echo -e "  Formatting the \"swap\" partition..."
 mkswap /dev/$sd2 &> /dev/null
 swapon /dev/$sd2 &> /dev/null
@@ -200,12 +201,12 @@ initrd /intel-ucode.img
 initrd /initramfs-linux.img
 options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
-  arch-chroot /mnt pacman -S grub
+  arch-chroot /mnt pacman -S grub &> /dev/null
   mkinitcpio -p linux &> /dev/null
-  arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd &> /dev/null
+  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd &> /dev/null
   if [ $? != 0 ]
   then
-    arch-chroot /mnt grub-install  --no-floppy --recheck /dev/$sd &> /dev/null
+    arch-chroot /mnt grub-install --no-floppy --recheck --target=i386-pc /dev/$sd &> /dev/null
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
 fi
