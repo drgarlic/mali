@@ -201,8 +201,8 @@ initrd /intel-ucode.img
 initrd /initramfs-linux.img
 options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
-  arch-chroot /mnt pacman -S grub &> /dev/null
-  mkinitcpio -p linux &> /dev/null
+  arch-chroot /mnt pacman -Syy --noconfirm grub &> /dev/null
+  mkinitcpio -p linux
   echo -e "  Installing Grub..."
   arch-chroot /mnt grub-install --target=i386-pc /dev/$sd
   if [ $? != 0 ]
