@@ -68,6 +68,9 @@ sd2=$sd$between\2
 sd3=$sd$between\3
 
 echo "  Destroying the partition table..."
+
+read -p "  Press CTRL+C"
+
 sgdisk -Z /dev/$sd > /dev/null
 echo -e "  Creating the \"boot\" partition..."
 if [ "$uefi" = true ]
