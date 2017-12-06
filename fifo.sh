@@ -203,12 +203,14 @@ options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
   arch-chroot /mnt pacman -S grub &> /dev/null
   mkinitcpio -p linux &> /dev/null
-  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd &> /dev/null
+  echo -e "  Installing Grub..."
+  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd
   if [ $? != 0 ]
   then
-    arch-chroot /mnt grub-install --no-floppy --recheck --target=i386-pc /dev/$sd &> /dev/null
+    echo -e "  Something went wrong, reinstalling Grub..."
+    arch-chroot /mnt grub-install --no-floppy --recheck --target=i386-pc /dev/$sd
   fi
-  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
 read -p "`echo -e "\n\n  Done.\n\n"`  Press enter to continue"
