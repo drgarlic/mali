@@ -114,16 +114,16 @@ mount /dev/$sd3 /mnt/home
 echo -e "\n\n    Chapter III - Installation\n"
 
 
-read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" mirror
+read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
 mirror=${mirror,,}
 mirror=${mirror::1}
-while [[ "$mirror" != "y" && "$wifi" != "n" ]]
+while [[ "$mirror" != "y" && "$mirror" != "n" ]]
 do
   read -p "  Wrong answer `echo $'\n> '`" mirror
   mirror=${mirror,,}
   mirror=${mirror::1}
 done
-if [ "$mirror" = "y" ]
+if [ "$mirror" == "y" ]
 then
   echo "  Updating the mirror list..."
   cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
