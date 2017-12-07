@@ -69,21 +69,19 @@ sd3=$sd$between\3
 
 echo "  Destroying the partition table..."
 
-read -p "  Press CTRL+C"
-
-sgdisk -Z /dev/$sd > /dev/null
-echo -e "  Creating the \"boot\" partition..."
 if [ "$uefi" = true ]
 then
+  sgdisk -Z /dev/$sd > /dev/null
+  echo -e "  Creating the \"boot\" partition..."
   sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
+  ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
+  echo -e "  Creating the \"swap\" partition..."
+  sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
+  echo -e "  Creating the \"arch\" partition..."
+  sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
 else
-  sgdisk -n 0:0:+500M -t 0:ef02 -c 0:"boot" /dev/$sd &> /dev/null
+  cfdisk
 fi
-ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
-echo -e "  Creating the \"swap\" partition..."
-sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
-echo -e "  Creating the \"arch\" partition..."
-sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
 echo "  Updating the partition table..."
 sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
