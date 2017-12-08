@@ -6,8 +6,8 @@
 # ./fifo.sh
 
 clear
-echo -e "\n    Welcome.
-  This script will guide you during this very painful installation of Arch Linux.
+echo -e "\n    Hi, I'm Bob.
+  I will guide you during this very painful and mind blowing installation of Arch Linux.
   Put your belt on, take a deep breath and please try not to panic.
   
   Caution: This script does NOT support dual boot and probably never will, just embrace Linux."
@@ -235,16 +235,16 @@ options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
   arch-chroot /mnt pacman -Syy --noconfirm grub &> /dev/null
   echo -e "  Installing Grub..."
-  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd
+  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd &> /dev/null
   if [ $? != 0 ]
   then
     echo -e "  Something went wrong, reinstalling Grub..."
-    arch-chroot /mnt grub-install --no-floppy --recheck --target=i386-pc /dev/$sd
+    arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$sd &> /dev/null
   fi
-  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
 fi
 
-echo -e "\n\n  Done.\n\n"
+echo -e "\n\n  Done.\n"
 read -p "  Press enter to continue"
 umount -R /mnt
 shutdown -h now
