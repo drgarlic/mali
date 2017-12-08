@@ -23,14 +23,14 @@ input() {
 } 
 
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
-input wifi
+input $wifi
 while [ "$wifi" = "y" ]
 do
   wifi-menu
   if [ $? != 0 ]
   then
     read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" wifi
-    input wifi
+    input $wifi
   else
     wifi="n"
   fi
@@ -144,7 +144,7 @@ mount /dev/$sd3 /mnt/home
 echo -e "\n\n    Chapter III - Installation\n"
 
 read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
-input mirror
+input $mirror
 if [ "$mirror" == "y" ]
 then
   echo "  Updating the mirror list..."
