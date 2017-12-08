@@ -22,21 +22,24 @@ input() {
   eval "$1=$value"
 } 
 
-read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
-input $wifi
-while [ "$wifi" = "y" ]
-do
-  wifi-menu
-  if [ $? != 0 ]
-  then
-    read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" wifi
-    input $wifi
-  else
-    wifi="n"
-  fi
-done
-
 echo "  Checking the internet connection..."
+ping -c 1 archlinux.org &> /dev/null
+if [ $? != 0 ]
+then
+  read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
+  input $wifi
+  while [ "$wifi" = "y" ]
+  do
+    wifi-menu
+    if [ $? != 0 ]
+    then
+      read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" wifi
+      input $wifi
+    else
+      wifi="n"
+    fi
+  done
+fi
 until ping -c 1 archlinux.org &> /dev/null
 do
   echo -e "  Plug an ethernet cable"
