@@ -86,7 +86,6 @@ wipefs -a /dev/$sd1 &> /dev/null
 wipefs -a /dev/$sd2 &> /dev/null
 wipefs -a /dev/$sd3 &> /dev/null
 wipefs -a /dev/$sd &> /dev/null
-echo "test"
 if [ "$uefi" = true ]
 then
   sgdisk -Z /dev/$sd > /dev/null
@@ -115,9 +114,7 @@ p
 
 
 w" | fdisk /dev/$sd > /dev/null
-  echo "test2"
   fdisk -l /dev/$sd > /dev/null
-  echo "test3"
 fi
 echo "  Updating the partition table..."
 partprobe /dev/$sd > /dev/null
