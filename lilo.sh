@@ -2,10 +2,10 @@
 
 clear
 
-echo "  Updating the system..."
-pacaur -Syuu --noconfirm --noedit --silent > /dev/null
 echo "  Installing Pacaur..."
 yaourt -S --noconfirm pacaur > /dev/null
+echo "  Updating the system..."
+pacaur -Syuu --noconfirm --noedit --silent > /dev/null
 echo "  Installing the window manager..."
 pacaur -S --noconfirm --noedit --silent bspwm sxhkd &> /dev/null
 echo "  Installing the terminal..."
