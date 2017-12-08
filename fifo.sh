@@ -1,6 +1,5 @@
 #!/bin/bash
 # Instructions:
-# wifi-menu
 # wget https://raw.githubusercontent.com/gawlk/alis/master/fifo.sh
 # chmod +x fifo.sh
 # ./fifo.sh
