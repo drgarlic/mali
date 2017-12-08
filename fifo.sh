@@ -8,6 +8,18 @@ read -p "`echo -e "\n  "`Press enter to continue"
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
+input() {
+  value=$1
+  value=${value,,}
+  value=${value::1}
+  while [[ "$value" != $2 && "$value" != $3 ]]
+  do
+    read -p "  Wrong answer `echo $'\n> '`" value
+    value=${value,,}
+    value=${value::1}
+  done
+} 
+
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
 wifi=${wifi,,}  #Lowercase
 wifi=${wifi::1} #First letter
