@@ -6,37 +6,31 @@ echo -e "\n    Welcome.
   Put your belt on, take a deep breath and please try not to panic."
 read -p "`echo -e "\n  "`Press enter to continue"
 
+
 echo -e "\n\n    Chapter I - Preparations\n"
 
 input() {
   value=$1
   value=${value,,}
   value=${value::1}
-  while [[ "$value" != $2 && "$value" != $3 ]]
+  while [[ "$value" != "y" && "$value" != "n" ]]
   do
     read -p "  Wrong answer `echo $'\n> '`" value
     value=${value,,}
     value=${value::1}
   done
+  eval "$1=$value"
 } 
 
 read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
-wifi=${wifi,,}  #Lowercase
-wifi=${wifi::1} #First letter
-while [[ "$wifi" != "y" && "$wifi" != "n" ]]
-do
-  read -p "  Wrong answer `echo $'\n> '`" wifi
-  wifi=${wifi,,}
-  wifi=${wifi::1}
-done
+input wifi
 while [ "$wifi" = "y" ]
 do
   wifi-menu
   if [ $? != 0 ]
   then
-    read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" $again
-    again=${again,,}
-    wifi=${again::1}
+    read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" wifi
+    input wifi
   else
     wifi="n"
   fi
@@ -64,7 +58,9 @@ fi
 echo "  Updating the system clock..."
 timedatectl set-ntp true
 
+
 echo -e "\n\n    Chapter II - Partitions\n"
+
 lsblk
 read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
 sd=${sd,,}
@@ -73,7 +69,6 @@ do
   read -p "  Wrong answer `echo $'\n> '`" sd
   sd=${sd,,}
 done
-sd=$sd
 between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed "s/^.*$sd//" | sed 's/.$//'`
 sd1=$sd$between\1
 sd2=$sd$between\2
@@ -124,18 +119,11 @@ mount /dev/$sd1 /mnt/boot
 echo -e "  Mounting \"/mnt/home\"..."
 mount /dev/$sd3 /mnt/home
 
+
 echo -e "\n\n    Chapter III - Installation\n"
 
-
 read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
-mirror=${mirror,,}
-mirror=${mirror::1}
-while [[ "$mirror" != "y" && "$mirror" != "n" ]]
-do
-  read -p "  Wrong answer `echo $'\n> '`" mirror
-  mirror=${mirror,,}
-  mirror=${mirror::1}
-done
+input mirror
 if [ "$mirror" == "y" ]
 then
   echo "  Updating the mirror list..."
@@ -146,6 +134,7 @@ fi
 
 echo "  Installing the operating system..."
 pacstrap /mnt base base-devel &> /dev/null
+
 
 echo -e "\n\n    Chapter IV - Configure the system\n"
 
@@ -215,7 +204,6 @@ initrd /initramfs-linux.img
 options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
   arch-chroot /mnt pacman -Syy --noconfirm grub &> /dev/null
-  mkinitcpio -p linux
   echo -e "  Installing Grub..."
   arch-chroot /mnt grub-install --target=i386-pc /dev/$sd
   if [ $? != 0 ]
@@ -226,6 +214,7 @@ else
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
-read -p "`echo -e "\n\n  Done.\n\n"`  Press enter to continue"
+echo -e "\n\n  Done.\n\n"
+read -p "  Press enter to continue"
 umount -R /mnt
 shutdown -h now
