@@ -80,7 +80,7 @@ then
   echo -e "  Creating the \"arch\" partition..."
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
 else
-  cfdisk
+  cfdisk /dev/$sd
 fi
 echo "  Updating the partition table..."
 sgdisk -p /dev/$sd > /dev/null
