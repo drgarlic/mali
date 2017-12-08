@@ -2,12 +2,12 @@
 
 clear
 
-echo "  Installing Pacaur..."
-yaourt -S --noconfirm pacaur > /dev/null
 echo "  Updating the system..."
 pacaur -Syuu --noconfirm --noedit --silent > /dev/null
+echo "  Installing Pacaur..."
+yaourt -S --noconfirm pacaur > /dev/null
 echo "  Installing the window manager..."
-pacaur -S --noconfirm --noedit --silent openbox-patched &> /dev/null
+pacaur -S --noconfirm --noedit --silent bspwm sxhkd &> /dev/null
 echo "  Installing the terminal..."
 pacaur -S --noconfirm --noedit --silent termite tmux feh htop openssh rsync scrot &> /dev/null
 echo "  Installing some fonts..."
