@@ -109,7 +109,7 @@ p
 3
 
 
-w" | fdisk /dev/$sd
+w" | fdisk /dev/$sd > /dev/null
   fdisk -l /dev/$sd > /dev/null
 fi
 echo "  Updating the partition table..."
