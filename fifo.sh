@@ -76,23 +76,44 @@ sd3=$sd$between\3
 
 echo "  Destroying the partition table..."
 
+wipefs --all --force /dev/$sd
+swap=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
+wipefs -a /dev/$sd1 &> /dev/null
+wipefs -a /dev/$sd2 &> /dev/null
+wipefs -a /dev/$sd3 &> /dev/null
+wipefs -a /dev/$sd &> /dev/null
 if [ "$uefi" = true ]
 then
   sgdisk -Z /dev/$sd > /dev/null
   echo -e "  Creating the \"boot\" partition..."
   sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
-  ram=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
   echo -e "  Creating the \"swap\" partition..."
-  sgdisk -n 0:0:+${ram}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
+  sgdisk -n 0:0:+${swap}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
   echo -e "  Creating the \"arch\" partition..."
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
+  sgdisk -p /dev/$sd > /dev/null
 else
-  cfdisk /dev/$sd
+  echo "o
+n
+p
+1
+
++500M
+n
+p
+2
+
++${swap}G
+n
+p
+3
+
+
+w" | fdisk /dev/$sd
+  fdisk -l /dev/$sd > /dev/null
 fi
 echo "  Updating the partition table..."
-sgdisk -p /dev/$sd > /dev/null
 partprobe /dev/$sd > /dev/null
-fdisk -l /dev/$sd > /dev/null
 
 echo -e "  Formatting the \"boot\" partition..."
 if [ "$uefi" = true ]
