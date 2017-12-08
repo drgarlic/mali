@@ -81,7 +81,6 @@ sd3=$sd$between\3
 
 echo "  Destroying the partition table..."
 
-wipefs --all --force /dev/$sd
 swap=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
 wipefs -a /dev/$sd1 &> /dev/null
 wipefs -a /dev/$sd2 &> /dev/null
