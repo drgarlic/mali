@@ -1,11 +1,16 @@
 #!/bin/bash
+# Instructions:
+# wifi-menu
+# wget https://raw.githubusercontent.com/gawlk/alis/master/fifo.sh
+# chmod +x fifo.sh
+# ./fifo.sh
 
 clear
 echo -e "\n    Welcome.
   This script will guide you during this very painful installation of Arch Linux.
   Put your belt on, take a deep breath and please try not to panic.
   
-  Caution: This script does NOT support dual boot and probably never will, just embrace Arch."
+  Caution: This script does NOT support dual boot and probably never will, just embrace Linux."
 read -p "`echo -e "\n  "`Press enter to continue"
 
 
