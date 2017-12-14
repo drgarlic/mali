@@ -2,7 +2,8 @@
 
 clear
 
-yaourt -S bspwm sxhkd termite
+sudo pacman -S bspwm sxhkd termite
+yaourt -S hsetroot
 
 # echo "  Installing Pacaur..."
 # yaourt -S --noconfirm pacaur > /dev/null
