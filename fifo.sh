@@ -212,9 +212,9 @@ echo "  Installing Yaourt..."
 arch-chroot /mnt pacman -Syy --noconfirm yaourt &> /dev/null
 echo "  Installing the Intel microcode package..."
 arch-chroot /mnt pacman -Syy --noconfirm intel-ucode &> /dev/null
-echo "  Installing the network manager..."
-arch-chroot /mnt pacman -Syy --noconfirm networkmanager &> /dev/null
-arch-chroot /mnt systemctl enable NetworkManager &> /dev/null
+# echo "  Installing the network manager..."
+# arch-chroot /mnt pacman -Syy --noconfirm networkmanager &> /dev/null
+# arch-chroot /mnt systemctl enable NetworkManager &> /dev/null
 echo "  Installing wifi packages..."
 arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog &> /dev/null
 echo "  Installing video drivers..."
