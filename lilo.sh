@@ -3,7 +3,7 @@
 clear
 
 sudo pacman -S bspwm sxhkd termite
-yaourt -S hsetroot
+yaourt -S hsetroot bdf-creep
 
 # echo "  Installing Pacaur..."
 # yaourt -S --noconfirm pacaur > /dev/null
