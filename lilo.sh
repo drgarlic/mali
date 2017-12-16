@@ -3,7 +3,7 @@
 clear
 
 sudo pacman -S bspwm sxhkd termite
-yaourt -S hsetroot bdf-creep
+yaourt -S hsetroot bdf-creep phallus-fonts-git
 
 # echo "  Installing Pacaur..."
 # yaourt -S --noconfirm pacaur > /dev/null
