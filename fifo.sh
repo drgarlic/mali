@@ -55,13 +55,17 @@ do
   sleep 5
 done
 
-echo "  Checking if booted as bios or uefi..."
-ls /sys/firmware/efi/efivars &> /dev/null
-if [ $? = 0 ]
-then
-  uefi=true
-else
-  uefi=false
+read -p "  Installing on a USB key (Y/n)?  `echo $'\n> '`" usb
+input $usb
+if [[ "$usb" != "y" ]]
+  echo "  Checking if booted as bios or uefi..."
+  ls /sys/firmware/efi/efivars &> /dev/null
+  if [ $? = 0 ]
+  then
+    uefi=true
+  else
+    uefi=false
+  fi
 fi
 
 echo "  Updating the system clock..."
@@ -80,14 +84,20 @@ do
 done
 between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed "s/^.*$sd//" | sed 's/.$//'`
 sd1=$sd$between\1
-sd2=$sd$between\2
-sd3=$sd$between\3
+
+if [[ "$usb" != "y" ]]
+then
+  sd2=$sd$between\2
+  sd3=$sd$between\3
+else
+  sd3=$sd$between\2
+fi
 
 echo "  Destroying the partition table..."
 
 swap=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
 wipefs -a /dev/$sd1 &> /dev/null
-wipefs -a /dev/$sd2 &> /dev/null
+[[ "$usb" != "y" ]] && wipefs -a /dev/$sd2 &> /dev/null
 wipefs -a /dev/$sd3 &> /dev/null
 wipefs -a /dev/$sd &> /dev/null
 if [ "$uefi" = true ]
@@ -109,13 +119,11 @@ p
 +500M
 n
 p
-2
-
+2" && ([[ "$usb" != "y" ]] && echo "
 +${swap}G
 n
 p
-3
-
+3" || echo "") && echo "
 
 w" | fdisk /dev/$sd > /dev/null
   fdisk -l /dev/$sd > /dev/null
@@ -124,18 +132,27 @@ echo "  Updating the partition table..."
 partprobe /dev/$sd > /dev/null
 
 echo -e "  Formatting the \"boot\" partition..."
-if [ "$uefi" = true ]
+if [[ "$usb" != "y" ]]
 then
-  mkfs.fat -F32 /dev/$sd1 &> /dev/null
+  if [ "$uefi" = true ]
+  then
+    mkfs.fat -F32 /dev/$sd1 &> /dev/null
+  else
+    mkfs.ext2 -F /dev/$sd1 &> /dev/null
+  fi
+  
+  echo -e "  Formatting the \"swap\" partition..."
+  mkswap /dev/$sd2 &> /dev/null
+  swapon /dev/$sd2 &> /dev/null
+  
+  echo -e "  Formatting the \"arch\" partition..."
+  mkfs.ext4 -F /dev/$sd3 &> /dev/null
 else
-  mkfs.ext2 -F /dev/$sd1 &> /dev/null
+  mkfs.ext4 -O "^has_journal" /dev/$sd1
+  
+  echo -e "  Formatting the \"arch\" partition..."
+  mkfs.ext4 -O "^has_journal" /dev/$sd3
 fi
-# mkfs.fat -F32 /dev/$sd1 &> /dev/null
-echo -e "  Formatting the \"swap\" partition..."
-mkswap /dev/$sd2 &> /dev/null
-swapon /dev/$sd2 &> /dev/null
-echo -e "  Formatting the \"arch\" partition..."
-mkfs.ext4 -F /dev/$sd3 &> /dev/null
 
 echo -e "  Mounting \"/mnt\"..."
 mount /dev/$sd3 /mnt
@@ -232,6 +249,13 @@ initrd /intel-ucode.img
 initrd /initramfs-linux.img
 options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
 else
+  if [[ "$usb" == "y" ]]
+  then
+    echo -e "  Setting mkinitcpio"
+    arch-chroot /mnt sed -i '52s/autodetect modconf block/block autodetect modconf/' /etc/mkinitcpio.conf
+    arch-chroot /mnt mkinitcpio -p linux
+  fi
+  
   arch-chroot /mnt pacman -Syy --noconfirm grub &> /dev/null
   echo -e "  Installing Grub..."
   arch-chroot /mnt grub-install --target=i386-pc /dev/$sd &> /dev/null
@@ -241,6 +265,12 @@ else
     arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$sd &> /dev/null
   fi
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
+  
+  [[ "$usb" == "y" ]] && uuid=$(blkid -o value -s UUID /dev/$sd3) && arch-chroot /mnt echo -e "LABEL Arch
+    MENU LABEL Arch Linux
+    LINUX ../vmlinuz-linux
+    APPEND root=UUID=$uuid ro
+    INITRD ../initramfs-linux.img" > /mnt/boot/grub/menu.lst
 fi
 
 echo -e "\n\n  Done.\n"
