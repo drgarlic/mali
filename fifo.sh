@@ -58,6 +58,7 @@ done
 read -p "  Installing on a USB key (Y/n)?  `echo $'\n> '`" usb
 input $usb
 if [[ "$usb" != "y" ]]
+then
   echo "  Checking if booted as bios or uefi..."
   ls /sys/firmware/efi/efivars &> /dev/null
   if [ $? = 0 ]
