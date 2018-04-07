@@ -112,7 +112,7 @@ then
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
   sgdisk -p /dev/$sd > /dev/null
 else
-  if [[ "$usb" != "y" ]] echo "o
+  [[ "$usb" != "y" ]] && echo "o
 n
 p
 1
@@ -162,10 +162,10 @@ then
   echo -e "  Formatting the \"arch\" partition..."
   mkfs.ext4 -F /dev/$sd3 &> /dev/null
 else
-  mkfs.ext4 -O "^has_journal" /dev/$sd1
+  mkfs.ext4 -O "^has_journal" /dev/$sd1 &> /dev/null
   
   echo -e "  Formatting the \"arch\" partition..."
-  mkfs.ext4 -O "^has_journal" /dev/$sd3
+  mkfs.ext4 -O "^has_journal" /dev/$sd3 &> /dev/null
 fi
 
 echo -e "  Mounting \"/mnt\"..."
