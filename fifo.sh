@@ -112,7 +112,7 @@ then
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
   sgdisk -p /dev/$sd > /dev/null
 else
-  echo "o
+  if [[ "$usb" != "y" ]] echo "o
 n
 p
 1
@@ -120,11 +120,24 @@ p
 +500M
 n
 p
-2" && ([[ "$usb" != "y" ]] && echo "
+2
+
 +${swap}G
 n
 p
-3" || echo "") && echo "
+3
+
+
+w" | fdisk /dev/$sd > /dev/null || echo "o
+n
+p
+1
+
++500M
+n
+p
+2
+
 
 w" | fdisk /dev/$sd > /dev/null
   fdisk -l /dev/$sd > /dev/null
