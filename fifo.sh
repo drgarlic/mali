@@ -1,45 +1,69 @@
 #!/bin/bash
 
-clear
+# ---
+# SETUP
+# ---
 
-printf "\nHi, I'm Alis.\n"
-printf "I will guide you during this very painful and mind blowing installation of Arch Linux.\n"
-printf "Put your belt on, take a deep breath and please try not to panic.\n"
-printf "\nCaution: This script does NOT support dual boot and probably never will, just embrace Linux.\n\n"
-  
-read -n 1 -s -r -p "Press any key to continue"
+uefi=false
 
+# ---
+# LOCAL
+# ---
 
-echo -e "\n\n    Chapter I - Preparations\n"
+any_key() { 
+    read -n 1 -s -r -p "    Press any key to continue"
+    printf "\n"
+}
 
-wget -q --spider --timeout=20 https://raw.githubusercontent.com/gawlk/log/master/log
+welcome() {
+    clear
 
-echo "  Checking the internet connection..."
-ping -c 1 archlinux.org &> /dev/null
-if [ $? != 0 ]
-then
-  read -p "  Do you want to use wifi (Y/n) ? `echo $'\n> '`" wifi
-  input $wifi
-  while [ "$wifi" = "y" ]
-  do
-    wifi-menu
-    if [ $? != 0 ]
-    then
-      read -p "  Do you want to try again (Y/n)?  `echo $'\n> '`" wifi
-      input $wifi
-    else
-      wifi="n"
-    fi
-  done
-fi
-until ping -c 1 archlinux.org &> /dev/null
-do
-  echo -e "  Plug an ethernet cable"
-  read -p "  Press enter to continue"
-  systemctl stop dhcpcd
-  systemctl start dhcpcd
-  sleep 5
-done
+    printf "\n    Hi, I'm Alis.\n\n"
+    printf "    I'm here to install arch for you. Just take a seat and chill.\n"
+    printf "    But first, I'm gonna a few very important questions,\n"
+    printf "    I'm a genius of course but.. not a telepath.\n\n"    
+}
+
+input(){
+    printf "    Are you installing Arch on a external storage ?\n"
+}
+
+dl_log() {
+    ping -c 1 www.google.com &> /dev/null || ( printf "ERROR: No internet, please fix it and try again." && exit 1 )
+    
+    rm log &> /dev/null
+    wget -q --timeout=20 https://raw.githubusercontent.com/gawlk/log/master/log
+
+    . log
+}
+
+# ---
+# MAIN
+# ---
+
+main() {
+    # Chapter 0 - Initialisation 
+
+    welcome
+
+    input
+
+    dl_log
+
+    # Chapter 1 - Preparations
+
+    printf "\n    ---\n\n    Chapter I - Preparations\n\n"
+
+    log.info "Updating the system clock..."
+    timedatectl set-ntp true
+
+    log.info "Checking if UEFI..."
+}
+
+main 
+
+exit 0
+
 
 read -p "  Installing on a USB key (Y/n)?  `echo $'\n> '`" usb
 input $usb
@@ -54,9 +78,6 @@ then
     uefi=false
   fi
 fi
-
-echo "  Updating the system clock..."
-timedatectl set-ntp true
 
 
 echo -e "\n\n    Chapter II - Partitions\n"
