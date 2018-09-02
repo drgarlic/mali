@@ -1,32 +1,18 @@
 #!/bin/bash
-# Instructions:
-# wget https://raw.githubusercontent.com/gawlk/alis/master/fifo.sh
-# chmod +x fifo.sh
-# ./fifo.sh
 
 clear
-echo -e "\n    Hi, I'm Bob.
-  I will guide you during this very painful and mind blowing installation of Arch Linux.
-  Put your belt on, take a deep breath and please try not to panic.
+
+printf "\nHi, I'm Alis.\n"
+printf "I will guide you during this very painful and mind blowing installation of Arch Linux.\n"
+printf "Put your belt on, take a deep breath and please try not to panic.\n"
+printf "\nCaution: This script does NOT support dual boot and probably never will, just embrace Linux.\n\n"
   
-  Caution: This script does NOT support dual boot and probably never will, just embrace Linux."
-read -p "`echo -e "\n  "`Press enter to continue"
+read -n 1 -s -r -p "Press any key to continue"
 
 
 echo -e "\n\n    Chapter I - Preparations\n"
 
-input() {
-  value=$1
-  value=${value,,}
-  value=${value::1}
-  while [[ "$value" != "y" && "$value" != "n" ]]
-  do
-    read -p "  Wrong answer `echo $'\n> '`" value
-    value=${value,,}
-    value=${value::1}
-  done
-  eval "$1=$value"
-} 
+wget -q --spider --timeout=20 https://raw.githubusercontent.com/gawlk/log/master/log
 
 echo "  Checking the internet connection..."
 ping -c 1 archlinux.org &> /dev/null
