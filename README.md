@@ -11,7 +11,16 @@ This script currently supports installs on:
 
 # How to use ? 
 
-Just write this in your terminal:
+Recommended:
+
+```bash
+wget https://github.com/gawlk/alis/blob/master/fifo.sh
+chmod +x fifo.sh
+# Review the code and check that everything is up to date according to the "Installation guide"
+./fifo.sh
+```
+
+Not recommended:
 
 ```bash
 curl -sSL https://git.io/fAlOi | bash
