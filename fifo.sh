@@ -1,4 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+#    ^   '||   '||'  //''\
+#   //\   ||    ||   ``--.
+#  //''\  ||_| .||.  \\__/
+#
+# Description:              A painless arch installer
+# Dependencies:             none
+# Optionnal dependencies:   none
+# Author:                   gawlk
+# Contributors:             none
+
+# ---
+# TODO
+# ---
+#
+# - Clean the code
 
 # ---
 # SETUP
@@ -63,7 +79,6 @@ main() {
 main 
 
 exit 0
-
 
 read -p "  Installing on a USB key (Y/n)?  `echo $'\n> '`" usb
 input $usb
