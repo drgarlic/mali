@@ -20,7 +20,9 @@
 # SETUP
 # ---
 
+# Global variables
 uefi=false
+usb="n"
 
 # ---
 # LOCAL
@@ -40,11 +42,10 @@ welcome() {
     printf "    I'm a genius of course but.. not a telepath.\n\n"    
 }
 
-input(){
-    printf "    Are you installing Arch on a external storage ?\n"
+process_input(){
 }
 
-dl_log() {
+download_log() {
     ping -c 1 www.google.com &> /dev/null || ( printf "ERROR: No internet, please fix it and try again." && exit 1 )
     
     rm log &> /dev/null
@@ -64,7 +65,7 @@ main() {
 
     input
 
-    dl_log
+    download_log
 
     # Chapter 1 - Preparations
 
@@ -73,56 +74,48 @@ main() {
     log.info "Updating the system clock..."
     timedatectl set-ntp true
 
+    printf "    Are you installing Arch on a external storage ?\n"
+    read usb
+
     log.info "Checking if UEFI..."
+    [[ "$usb" == "n" ]] && ls /sys/firmware/efi/efivars &> /dev/null && uefi=true
+
+    printf "\n    ---\n\n    Chapter 2 - Partitions\n\n"
+
+    lsblk
+    printf "    On which partition do you want to install Arch ? (Example: sda)\n"
+    read partition
+    partition="$( lsblk | grep "disk" | grep -o "[0-9a-zA-Z]*$partition[0-9a-zA-Z]*" )"
+    while [[ -z "$partition" ]] 
+    do
+        #do something
+        partition="1"
+    done
+
+    between="" && [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
+    partition1=${partion}${between}1
+    partition3=${partion}${between}2
+    [[ "$usb" == "n" ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
+
+    log.info "Cleaning the partition table..."
+    wipefs -a /dev/$partition1 &> /dev/null
+    [[ "$usb" == "n" ]] && wipefs -a /dev/$partition2 &> /dev/null
+    wipefs -a /dev/$partition3 &> /dev/null
+    wipefs -a /dev/$partition &> /dev/null
+
+    swap=$( free -m | grep "Mem" | awk '{ print $2 }'
+    (( ( swap / 2000 ) + 1 ))
+
+    log.info "Creating a new partition table..."
+
+
 }
 
 main 
 
 exit 0
 
-read -p "  Installing on a USB key (Y/n)?  `echo $'\n> '`" usb
-input $usb
-if [[ "$usb" != "y" ]]
-then
-  echo "  Checking if booted as bios or uefi..."
-  ls /sys/firmware/efi/efivars &> /dev/null
-  if [ $? = 0 ]
-  then
-    uefi=true
-  else
-    uefi=false
-  fi
-fi
-
-
-echo -e "\n\n    Chapter II - Partitions\n"
-
-lsblk
-read -p "  Enter the name of the disered path (Example : sda) `echo $'\n> '`" sd
-sd=${sd,,}
-while ! [ `lsblk | awk '$6 == "disk"' | awk '{print $1}' | grep -x $sd` ]
-do
-  read -p "  Wrong answer `echo $'\n> '`" sd
-  sd=${sd,,}
-done
-between=`lsblk | awk '$6 == "part"' | awk '{print $1}' | grep $sd | head -1 | sed "s/^.*$sd//" | sed 's/.$//'`
-sd1=$sd$between\1
-
-if [[ "$usb" != "y" ]]
-then
-  sd2=$sd$between\2
-  sd3=$sd$between\3
-else
-  sd3=$sd$between\2
-fi
-
-echo "  Destroying the partition table..."
-
 swap=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
-wipefs -a /dev/$sd1 &> /dev/null
-[[ "$usb" != "y" ]] && wipefs -a /dev/$sd2 &> /dev/null
-wipefs -a /dev/$sd3 &> /dev/null
-wipefs -a /dev/$sd &> /dev/null
 if [ "$uefi" = true ]
 then
   sgdisk -Z /dev/$sd > /dev/null
@@ -132,7 +125,7 @@ then
   sgdisk -n 0:0:+${swap}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
   echo -e "  Creating the \"arch\" partition..."
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
-  sgdisk -p /dev/$sd > /dev/null
+  sgdisk -p /dev/$sd &> /dev/null
 else
   [[ "$usb" != "y" ]] && echo "o
 n
