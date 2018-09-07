@@ -22,7 +22,7 @@
 
 # Global variables
 uefi=false
-usb="n"
+usb=false
 
 # ---
 # LOCAL
@@ -43,6 +43,29 @@ welcome() {
 }
 
 process_input(){
+    printf "    Are you installing Arch on a external storage ?\n"
+    read usb
+
+    lsblk
+    printf "    On which partition do you want to install Arch ? (Example: sda)\n"
+    read partition
+    partition="$( lsblk | grep "disk" | grep -o "[0-9a-zA-Z]*$partition[0-9a-zA-Z]*" )"
+    while [[ -z "$partition" ]] 
+    do
+        #do something
+        partition="1"
+    done
+
+    read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
+    input $mirror
+
+    read -p "  Enter a hostname : " hostnm
+
+    read -p "  Enter a username: " usernm
+
+    # userpw
+
+    # rootpw
 }
 
 download_log() {
@@ -74,23 +97,10 @@ main() {
     log.info "Updating the system clock..."
     timedatectl set-ntp true
 
-    printf "    Are you installing Arch on a external storage ?\n"
-    read usb
-
     log.info "Checking if UEFI..."
     [[ "$usb" == "n" ]] && ls /sys/firmware/efi/efivars &> /dev/null && uefi=true
 
     printf "\n    ---\n\n    Chapter 2 - Partitions\n\n"
-
-    lsblk
-    printf "    On which partition do you want to install Arch ? (Example: sda)\n"
-    read partition
-    partition="$( lsblk | grep "disk" | grep -o "[0-9a-zA-Z]*$partition[0-9a-zA-Z]*" )"
-    while [[ -z "$partition" ]] 
-    do
-        #do something
-        partition="1"
-    done
 
     between="" && [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
     partition1=${partion}${between}1
@@ -103,170 +113,122 @@ main() {
     wipefs -a /dev/$partition3 &> /dev/null
     wipefs -a /dev/$partition &> /dev/null
 
-    swap=$( free -m | grep "Mem" | awk '{ print $2 }'
+    swap=$( free -m | grep "Mem" | awk '{ print $2 }' )
     (( ( swap / 2000 ) + 1 ))
 
     log.info "Creating a new partition table..."
+    if [ "$uefi" = true ]
+    then
+        sgdisk -Z /dev/$partition &> /dev/null
+        sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$partition &> /dev/null
+        sgdisk -n 0:0:+${swap}G -t 0:8200 -c 0:"swap" /dev/$partition &> /dev/null
+        sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$partition &> /dev/null
+        sgdisk -p /dev/$partition &> /dev/null
+    else
+        [[ "$usb" == "n" ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
+        printf "o\nn\np\n1\n\n+500M\nn\np\n2\n\n${additionnal_instructions}\nw\n" | fdisk /dev/$partition &> /dev/null
+        fdisk -l /dev/$partition &> /dev/null
+    fi
 
+    log.info "Updating the partition table..."
+    partprobe /dev/$partition > /dev/null
 
+    log.info "Formatting the \"boot\" partition..."
+    if [[ "$usb" == "n" ]]
+    then
+      [[ "$uefi" = true ]] && mkfs.fat -F32 /dev/$partition1 &> /dev/null || mkfs.ext2 -F /dev/$partition1 &> /dev/null
+      
+      log.ingo "Formatting the \"swap\" partition..."
+      mkswap /dev/$partition2 &> /dev/null
+      swapon /dev/$partition2 &> /dev/null
+      
+      log.info "Formatting the \"arch\" partition..."
+      mkfs.ext4 -F /dev/$partition3 &> /dev/null
+    else
+      mkfs.ext4 -O "^has_journal" /dev/$partition1 &> /dev/null
+      
+      log.info "Formatting the \"arch\" partition..."
+      mkfs.ext4 -O "^has_journal" /dev/$partition3 &> /dev/null
+    fi
+
+    log.info "Mounting \"/mnt\"..."
+    mount /dev/$partition3 /mnt
+    log.info "Creating \"/mnt/boot\"..."
+    mkdir /mnt/boot
+    log.info "Creating \"/mnt/home\"..."
+    mkdir /mnt/home
+    log.info "Mounting \"/mnt/boot\"..."
+    mount /dev/$partition1 /mnt/boot
+    log.info "Mounting \"/mnt/home\"..."
+    mount /dev/$partition3 /mnt/home
+
+    # Chapter III - Installation
+
+    printf "\n    ---\n\n    Chapter III - Installation\n\n"
+
+    if [[ "$mirror" == "y" ]]
+    then
+      log.info "Updating the mirror list..."
+      cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+      sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
+      rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+    fi
+
+    log.info "Installing the operating system..."
+    pacstrap /mnt base base-devel &> /dev/null
+
+    # Chapter IV - Configuration
+
+    printf "\n    ---\n\n    Chapter IV - Configuration\n\n"
+
+    log.info "Generating the fstab file..."
+    genfstab -U /mnt >> /mnt/etc/fstab
+
+    log.info "Setting the time..."
+    arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
+    arch-chroot /mnt hwclock --systohc --utc
+
+    log.info "Setting the language..."
+    arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
+    arch-chroot /mnt locale-gen > /dev/null
+    arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf > /dev/null
+
+    log.info "Creating the hostname..."
+    arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
+    arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
+    
+    log.info "Creating the user..."
+    arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usernm
+    arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+    arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
+
+    log.info "Setting user's password..."
+    printf "$usertpw\n$userpw\n" | arch-chroot /mnt passwd $usernm
+
+    log.info "Setting root's password..."
+    printf "$rootpw\n$rootpw\n" | arch-chroot /mnt passwd
+
+    log.info "Updating pacman's configuration"
+    arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
+    arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
 }
 
 main 
 
 exit 0
 
-swap=`expr \`free -m | grep -oP '\d+' | head -n 1\` / 2000 + 1`
-if [ "$uefi" = true ]
-then
-  sgdisk -Z /dev/$sd > /dev/null
-  echo -e "  Creating the \"boot\" partition..."
-  sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$sd &> /dev/null
-  echo -e "  Creating the \"swap\" partition..."
-  sgdisk -n 0:0:+${swap}G -t 0:8200 -c 0:"swap" /dev/$sd &> /dev/null
-  echo -e "  Creating the \"arch\" partition..."
-  sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$sd &> /dev/null
-  sgdisk -p /dev/$sd &> /dev/null
-else
-  [[ "$usb" != "y" ]] && echo "o
-n
-p
-1
-
-+500M
-n
-p
-2
-
-+${swap}G
-n
-p
-3
-
-
-w" | fdisk /dev/$sd > /dev/null || echo "o
-n
-p
-1
-
-+500M
-n
-p
-2
-
-
-w" | fdisk /dev/$sd > /dev/null
-  fdisk -l /dev/$sd > /dev/null
-fi
-echo "  Updating the partition table..."
-partprobe /dev/$sd > /dev/null
-
-echo -e "  Formatting the \"boot\" partition..."
-if [[ "$usb" != "y" ]]
-then
-  if [ "$uefi" = true ]
-  then
-    mkfs.fat -F32 /dev/$sd1 &> /dev/null
-  else
-    mkfs.ext2 -F /dev/$sd1 &> /dev/null
-  fi
-  
-  echo -e "  Formatting the \"swap\" partition..."
-  mkswap /dev/$sd2 &> /dev/null
-  swapon /dev/$sd2 &> /dev/null
-  
-  echo -e "  Formatting the \"arch\" partition..."
-  mkfs.ext4 -F /dev/$sd3 &> /dev/null
-else
-  mkfs.ext4 -O "^has_journal" /dev/$sd1 &> /dev/null
-  
-  echo -e "  Formatting the \"arch\" partition..."
-  mkfs.ext4 -O "^has_journal" /dev/$sd3 &> /dev/null
-fi
-
-echo -e "  Mounting \"/mnt\"..."
-mount /dev/$sd3 /mnt
-echo -e "  Creating \"/mnt/boot\"..."
-mkdir /mnt/boot
-echo -e "  Creating \"/mnt/home\"..."
-mkdir /mnt/home
-echo -e "  Mounting \"/mnt/boot\"..."
-mount /dev/$sd1 /mnt/boot
-echo -e "  Mounting \"/mnt/home\"..."
-mount /dev/$sd3 /mnt/home
-
-
-echo -e "\n\n    Chapter III - Installation\n"
-
-read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
-input $mirror
-if [ "$mirror" == "y" ]
-then
-  echo "  Updating the mirror list..."
-  cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-  sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
-  rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
-fi
-
-echo "  Installing the operating system..."
-pacstrap /mnt base base-devel &> /dev/null
-
-
-echo -e "\n\n    Chapter IV - Configure the system\n"
-
-echo "  Generating the fstab file..."
-genfstab -U /mnt >> /mnt/etc/fstab
-
-echo "  Setting the time..."
-arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
-arch-chroot /mnt hwclock --systohc --utc
-
-echo "  Setting the language..."
-arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
-arch-chroot /mnt locale-gen > /dev/null
-arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf > /dev/null
-
-echo "  Creating the hostname..."
-read -p "  Enter a hostname : " hostnm
-arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
-arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
-
-echo "  Enter root's password: "
-until arch-chroot /mnt passwd
-do
-  :
-done
-read -p "  Enter a username: " usr
-echo "  Creating the user..."
-arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usr
-arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
-arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
-echo "  Enter the user's password: "
-until arch-chroot /mnt passwd $usr
-do 
-  :
-done
-
-echo -e "  Updating \"pacman.conf\"..."
-arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
-arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
-arch-chroot /mnt echo "[archlinuxfr]
-SigLevel = Never
-Server = http://repo.archlinux.fr/\$arch" >> /mnt/etc/pacman.conf
-echo "  Updating Pacman..."
-arch-chroot /mnt pacman -Sy &> /dev/null
-echo "  Installing Yaourt..."
-arch-chroot /mnt pacman -Syy --noconfirm yaourt &> /dev/null
-echo "  Installing the Intel microcode package..."
-arch-chroot /mnt pacman -Syy --noconfirm intel-ucode &> /dev/null
-# echo "  Installing the network manager..."
-# arch-chroot /mnt pacman -Syy --noconfirm networkmanager &> /dev/null
-# arch-chroot /mnt systemctl enable NetworkManager &> /dev/null
-echo "  Installing wifi packages..."
-arch-chroot /mnt pacman -Syy --noconfirm iw wpa_supplicant dialog &> /dev/null
-echo "  Installing video drivers..."
-arch-chroot /mnt pacman -Syy --noconfirm xf86-video-intel mesa &> /dev/null
-echo "  Installing X..."
-arch-chroot /mnt pacman -Syy --noconfirm xorg-server xorg-xinit xautolock xorg-xkill &> /dev/null
+log.info "Updating the repositories..."
+arch-chroot /mnt pacman -Sy
+log.info "Installing the Intel microcode package..."
+arch-chroot /mnt pacman -S --noconfirm intel-ucode &> /dev/null
+log.info "Installing wifi packages..."
+arch-chroot /mnt pacman -S --noconfirm iw wpa_supplicant &> /dev/null
+log.info "Installing video drivers..."
+arch-chroot /mnt pacman -S --noconfirm xf86-video-intel mesa &> /dev/null
+log.info "Installing X..."
+arch-chroot /mnt pacman -S --noconfirm xorg-server xorg-xinit &> /dev/null
+log.info "Installing yay..."
+arch-chroot /mnt pacman -S --noconfirm yay &> /dev/null
 
 echo -e "  Setting the boot loader..."
 if [ "$uefi" = true ]
