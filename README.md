@@ -7,11 +7,11 @@ This script currently supports installs on:
 - Non-EUFI systems
 - External storage
 
-**NOTE:** This script only supports basic hardware with Intel inside. If you need to, you'll have to install additional drivers yourself. (wifi, bluetooth, ...)
+**NOTE:** This script only supports basic hardware with Intel inside. If you need to, you'll have to install additional drivers yourself once the installation is completed.
 
 # How to use ? 
 
-Recommended:
+Recommended method:
 
 ```bash
 wget https://github.com/gawlk/alis/blob/master/fifo.sh
@@ -20,7 +20,7 @@ chmod +x fifo.sh
 ./fifo.sh
 ```
 
-Not recommended:
+Fastest method:
 
 ```bash
 curl -sSL https://git.io/fAlOi | bash
