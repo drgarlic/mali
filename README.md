@@ -11,6 +11,24 @@ This script currently supports installs on:
 
 # How to use ? 
 
+### Step 1: Connect to the internet
+
+Wireless method:
+
+```bash
+wifi-menu
+```
+
+**OR**
+
+Wired method:
+
+```bash
+systemctl restart dhcpcd && sleep 5
+```
+
+### Step 2: Download and launch the installer
+
 Recommended method:
 
 ```bash
@@ -19,6 +37,8 @@ chmod +x fifo.sh
 # Review the code and check that everything is up to date according to the "Installation guide"
 ./fifo.sh
 ```
+
+**OR**
 
 Fastest method:
 
