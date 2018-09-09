@@ -22,7 +22,7 @@
 
 # Global variables
 uefi=false
-usb=false
+external=false
 
 # ---
 # LOCAL
@@ -38,13 +38,13 @@ welcome() {
 
     printf "\n    Hi, I'm Alis.\n\n"
     printf "    I'm here to install arch for you. Just take a seat and chill.\n"
-    printf "    But first, I'm gonna a few very important questions,\n"
-    printf "    I'm a genius of course but.. not a telepath.\n\n"    
+    printf "    But first, I'm gonna ask you some very important questions,\n"
+    printf "    I'm a genius of course but not a telepath.\n\n"    
 }
 
 process_input(){
     printf "    Are you installing Arch on a external storage ?\n"
-    read usb
+    read external
 
     lsblk
     printf "    On which partition do you want to install Arch ? (Example: sda)\n"
@@ -77,6 +77,37 @@ download_log() {
     . log
 }
 
+install_packages() {
+    arch-chroot /mnt pacman -S --noconfirm \
+        intel-ucode \
+        xf86-video-intel mesa \
+        xorg-server xorg-xinit \ 
+        iw wpa_supplicant \
+        &> /dev/null
+}
+
+set_bootctl(){
+    arch-chroot /mnt bootctl install &> /dev/null
+    arch-chroot /mnt printf "title Arch Linux\nlinux /vmlinuz-linux\ninitrd /intel-ucode.img\ninitrd /initramfs-linux.img\noptions root=/dev/${partition3} pcie_aspm=force rw\n" > /mnt/boot/loader/entries/arch.conf
+}
+
+set_mkinitcpio() {
+    log.info "Setting mkinitcpio"
+    arch-chroot /mnt sed -i '52s/autodetect modconf block/block autodetect modconf/' /etc/mkinitcpio.conf
+    arch-chroot /mnt mkinitcpio -p linux
+}
+
+set_grub() {
+    log.info "Installing Grub..."
+    arch-chroot /mnt pacman -S --noconfirm grub &> /dev/null
+    arch-chroot /mnt grub-install --target=i386-pc /dev/$partition &> /dev/null || \
+        arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$partition &> /dev/null
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
+
+    [[ "$external" == true ]] && uuid=$( blkid -o value -s UUID /dev/$sd3 ) && \
+        arch-chroot /mnt echo -e "LABEL Arch\nMENU LABEL Arch Linux\nLINUX ../vmlinuz-linux\nAPPEND root=UUID=${uuid} ro\nINITRD ../initramfs-linux.img\n" > /mnt/boot/grub/menu.lst
+}
+
 # ---
 # MAIN
 # ---
@@ -98,18 +129,18 @@ main() {
     timedatectl set-ntp true
 
     log.info "Checking if UEFI..."
-    [[ "$usb" == "n" ]] && ls /sys/firmware/efi/efivars &> /dev/null && uefi=true
+    [[ "$external" == "n" ]] && ls /sys/firmware/efi/efivars &> /dev/null && uefi=true
 
     printf "\n    ---\n\n    Chapter 2 - Partitions\n\n"
 
     between="" && [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
     partition1=${partion}${between}1
     partition3=${partion}${between}2
-    [[ "$usb" == "n" ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
+    [[ "$external" == "n" ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
 
     log.info "Cleaning the partition table..."
     wipefs -a /dev/$partition1 &> /dev/null
-    [[ "$usb" == "n" ]] && wipefs -a /dev/$partition2 &> /dev/null
+    [[ "$external" == "n" ]] && wipefs -a /dev/$partition2 &> /dev/null
     wipefs -a /dev/$partition3 &> /dev/null
     wipefs -a /dev/$partition &> /dev/null
 
@@ -125,7 +156,7 @@ main() {
         sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$partition &> /dev/null
         sgdisk -p /dev/$partition &> /dev/null
     else
-        [[ "$usb" == "n" ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
+        [[ "$external" == "n" ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
         printf "o\nn\np\n1\n\n+500M\nn\np\n2\n\n${additionnal_instructions}\nw\n" | fdisk /dev/$partition &> /dev/null
         fdisk -l /dev/$partition &> /dev/null
     fi
@@ -134,7 +165,7 @@ main() {
     partprobe /dev/$partition > /dev/null
 
     log.info "Formatting the \"boot\" partition..."
-    if [[ "$usb" == "n" ]]
+    if [[ "$external" == "n" ]]
     then
       [[ "$uefi" = true ]] && mkfs.fat -F32 /dev/$partition1 &> /dev/null || mkfs.ext2 -F /dev/$partition1 &> /dev/null
       
@@ -195,7 +226,7 @@ main() {
 
     log.info "Creating the hostname..."
     arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
-    arch-chroot /mnt echo "127.0.1.1	$hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
+    arch-chroot /mnt echo "127.0.1.1    $hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
     
     log.info "Creating the user..."
     arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usernm
@@ -203,68 +234,36 @@ main() {
     arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
 
     log.info "Setting user's password..."
-    printf "$usertpw\n$userpw\n" | arch-chroot /mnt passwd $usernm
+    printf "${usertpw}\n${userpw}\n" | arch-chroot /mnt passwd $usernm
 
     log.info "Setting root's password..."
-    printf "$rootpw\n$rootpw\n" | arch-chroot /mnt passwd
+    printf "${rootpw}\n${rootpw}\n" | arch-chroot /mnt passwd
 
     log.info "Updating pacman's configuration"
     arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
     arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
+
+    log.info "Updating the repositories..."
+    arch-chroot /mnt pacman -Sy
+
+    log.info "Installing essential packages..."
+    install_packages
+
+    log.info "Setting the boot loader..."
+    if [[ "$uefi" = true ]]
+    then
+        set_bootctl
+    else
+        [[ "$external" == true ]] && set_mkinitcpio
+        set_grub
+    fi
+
+    log.info "Unmounting the partitions..."
+    umount -R /mnt
+
+    log.info "Shutting down the system..."
+    any_key
+    shutdown -h now
 }
 
 main 
-
-exit 0
-
-log.info "Updating the repositories..."
-arch-chroot /mnt pacman -Sy
-log.info "Installing the Intel microcode package..."
-arch-chroot /mnt pacman -S --noconfirm intel-ucode &> /dev/null
-log.info "Installing wifi packages..."
-arch-chroot /mnt pacman -S --noconfirm iw wpa_supplicant &> /dev/null
-log.info "Installing video drivers..."
-arch-chroot /mnt pacman -S --noconfirm xf86-video-intel mesa &> /dev/null
-log.info "Installing X..."
-arch-chroot /mnt pacman -S --noconfirm xorg-server xorg-xinit &> /dev/null
-log.info "Installing yay..."
-arch-chroot /mnt pacman -S --noconfirm yay &> /dev/null
-
-echo -e "  Setting the boot loader..."
-if [ "$uefi" = true ]
-then
-  arch-chroot /mnt bootctl install &> /dev/null
-  arch-chroot /mnt echo -e "title Arch Linux
-linux /vmlinuz-linux
-initrd /intel-ucode.img
-initrd /initramfs-linux.img
-options root=/dev/$sd3 pcie_aspm=force rw" > /mnt/boot/loader/entries/arch.conf
-else
-  if [[ "$usb" == "y" ]]
-  then
-    echo -e "  Setting mkinitcpio"
-    arch-chroot /mnt sed -i '52s/autodetect modconf block/block autodetect modconf/' /etc/mkinitcpio.conf
-    arch-chroot /mnt mkinitcpio -p linux
-  fi
-  
-  arch-chroot /mnt pacman -Syy --noconfirm grub &> /dev/null
-  echo -e "  Installing Grub..."
-  arch-chroot /mnt grub-install --target=i386-pc /dev/$sd &> /dev/null
-  if [ $? != 0 ]
-  then
-    echo -e "  Something went wrong, reinstalling Grub..."
-    arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$sd &> /dev/null
-  fi
-  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &> /dev/null
-  
-  [[ "$usb" == "y" ]] && uuid=$(blkid -o value -s UUID /dev/$sd3) && arch-chroot /mnt echo -e "LABEL Arch
-    MENU LABEL Arch Linux
-    LINUX ../vmlinuz-linux
-    APPEND root=UUID=$uuid ro
-    INITRD ../initramfs-linux.img" > /mnt/boot/grub/menu.lst
-fi
-
-echo -e "\n\n  Done.\n"
-read -p "  Press enter to continue"
-umount -R /mnt
-shutdown -h now
