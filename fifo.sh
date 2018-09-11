@@ -23,6 +23,12 @@
 # Global variables
 uefi=false
 external=false
+mirror=false
+hostnm=""
+usernm=""
+userpw=""
+rootpw=""
+partition=""
 
 # ---
 # LOCAL
@@ -42,8 +48,8 @@ welcome() {
     printf "    I'm a genius of course but not a telepath.\n\n"    
 }
 
-process_input(){
-    printf "    Are you installing Arch on a external storage ?\n"
+user_input(){
+    printf "    Are you installing Arch on a external storage ? [y/N]\n"
     read external
 
     lsblk
@@ -56,16 +62,29 @@ process_input(){
         partition="1"
     done
 
-    read -p "  Do you want to update the mirrorlist (Y/n) ? `echo $'\n> '`" mirror
+    printf "    Do you want to update the mirrorlist ? [y/N]\n" 
+    read mirror
     input $mirror
 
-    read -p "  Enter a hostname : " hostnm
+    printf "    Enter a hostname:\n" 
+    read hostnm
+    [[ "$hostnm" != [a-z]* ]] && exit 1
 
-    read -p "  Enter a username: " usernm
+    printf "    Enter a username:\n" 
+    read usernm
+    [[ "$usernm" != [a-z]* ]] && exit 1
 
-    # userpw
+    printf "    Enter user's password:\n" 
+    read -s userpw
+    printf "    Repeat the password:\n"
+    read -s confirm
+    [[ -z "$userpw" || "$userpw" != "$confirm" ]] && exit 1 
 
-    # rootpw
+    printf "    Enter root's password:\n" 
+    read -s rootpw
+    printf "    Repeat the password:\n"
+    read -s confirm
+    [[ -z "$rootpw" || "$rootpw" != "$confirm" ]] && exit 1 
 }
 
 download_log() {
@@ -77,7 +96,20 @@ download_log() {
     . log
 }
 
+udpate_pacman() {
+    log.info "Updating pacman's configuration"
+
+    arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
+    arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
+
+    log.info "Updating pacman's repositories..."
+
+    arch-chroot /mnt pacman -Sy
+}
+
 install_packages() {
+    log.info "Installing essential packages..."
+
     arch-chroot /mnt pacman -S --noconfirm \
         intel-ucode \
         xf86-video-intel mesa \
@@ -87,18 +119,22 @@ install_packages() {
 }
 
 set_bootctl(){
+    log.info "Installing bootctl..."
+
     arch-chroot /mnt bootctl install &> /dev/null
     arch-chroot /mnt printf "title Arch Linux\nlinux /vmlinuz-linux\ninitrd /intel-ucode.img\ninitrd /initramfs-linux.img\noptions root=/dev/${partition3} pcie_aspm=force rw\n" > /mnt/boot/loader/entries/arch.conf
 }
 
 set_mkinitcpio() {
     log.info "Setting mkinitcpio"
+
     arch-chroot /mnt sed -i '52s/autodetect modconf block/block autodetect modconf/' /etc/mkinitcpio.conf
     arch-chroot /mnt mkinitcpio -p linux
 }
 
 set_grub() {
-    log.info "Installing Grub..."
+    log.info "Installing grub..."
+
     arch-chroot /mnt pacman -S --noconfirm grub &> /dev/null
     arch-chroot /mnt grub-install --target=i386-pc /dev/$partition &> /dev/null || \
         arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$partition &> /dev/null
@@ -106,6 +142,18 @@ set_grub() {
 
     [[ "$external" == true ]] && uuid=$( blkid -o value -s UUID /dev/$sd3 ) && \
         arch-chroot /mnt echo -e "LABEL Arch\nMENU LABEL Arch Linux\nLINUX ../vmlinuz-linux\nAPPEND root=UUID=${uuid} ro\nINITRD ../initramfs-linux.img\n" > /mnt/boot/grub/menu.lst
+}
+
+set_bootload() {
+    log.info "Setting the boot loader..."
+
+    if [[ "$uefi" = true ]]
+    then
+        set_bootctl
+    else
+        [[ "$external" == true ]] && set_mkinitcpio
+        set_grub
+    fi
 }
 
 # ---
@@ -117,7 +165,7 @@ main() {
 
     welcome
 
-    input
+    user_input
 
     download_log
 
@@ -133,14 +181,14 @@ main() {
 
     printf "\n    ---\n\n    Chapter 2 - Partitions\n\n"
 
-    between="" && [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
+    [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
     partition1=${partion}${between}1
     partition3=${partion}${between}2
-    [[ "$external" == "n" ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
+    [[ "$external" == false ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
 
     log.info "Cleaning the partition table..."
     wipefs -a /dev/$partition1 &> /dev/null
-    [[ "$external" == "n" ]] && wipefs -a /dev/$partition2 &> /dev/null
+    [[ "$external" == false ]] && wipefs -a /dev/$partition2 &> /dev/null
     wipefs -a /dev/$partition3 &> /dev/null
     wipefs -a /dev/$partition &> /dev/null
 
@@ -156,7 +204,7 @@ main() {
         sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$partition &> /dev/null
         sgdisk -p /dev/$partition &> /dev/null
     else
-        [[ "$external" == "n" ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
+        [[ "$external" == false ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
         printf "o\nn\np\n1\n\n+500M\nn\np\n2\n\n${additionnal_instructions}\nw\n" | fdisk /dev/$partition &> /dev/null
         fdisk -l /dev/$partition &> /dev/null
     fi
@@ -197,9 +245,10 @@ main() {
 
     printf "\n    ---\n\n    Chapter III - Installation\n\n"
 
-    if [[ "$mirror" == "y" ]]
+    if [[ "$mirror" == true ]]
     then
       log.info "Updating the mirror list..."
+
       cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
       sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
       rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
@@ -239,24 +288,11 @@ main() {
     log.info "Setting root's password..."
     printf "${rootpw}\n${rootpw}\n" | arch-chroot /mnt passwd
 
-    log.info "Updating pacman's configuration"
-    arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
-    arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
+    update_pacman
 
-    log.info "Updating the repositories..."
-    arch-chroot /mnt pacman -Sy
-
-    log.info "Installing essential packages..."
     install_packages
 
-    log.info "Setting the boot loader..."
-    if [[ "$uefi" = true ]]
-    then
-        set_bootctl
-    else
-        [[ "$external" == true ]] && set_mkinitcpio
-        set_grub
-    fi
+    set_bootloader
 
     log.info "Unmounting the partitions..."
     umount -R /mnt
