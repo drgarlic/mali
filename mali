@@ -1,0 +1,370 @@
+#!/usr/bin/env bash
+#
+#  ||\/|   ^   '||   '||'
+#  ||  |  //\   ||    ||
+#  ||  | //''\  ||_| .||.
+#
+# Description:              A minimal arch linux installer
+# Dependencies:             none
+# Optionnal dependencies:   none
+# Author:                   gawlk
+# Contributors:             none
+
+# ---
+# TODO
+# ---
+#
+# - Clean the code
+# - Check if it works
+
+# ---
+# SETUP
+# ---
+
+# Global variables
+external=""
+partition=""
+mirror=""
+hostnm=""
+usernm=""
+userpw=""
+rootpw=""
+uefi=false
+
+# ---
+# LOCAL
+# ---
+
+download_log() {
+    ping -c 1 www.google.com || ( printf "ERROR: No internet, please fix it and try again." && exit 1 )
+    
+    rm log #&> /dev/null
+    wget -q --timeout=20 https://raw.githubusercontent.com/gawlk/log/master/log
+
+    . log
+}
+
+welcome() {
+    clear
+
+    printf "\n" 
+    printf "    Hi.\n"
+    printf "\n" 
+    printf "    Sit.\n"
+    printf "    Answer.\n"
+    printf "    Chill.\n"
+    printf "\n"    
+}
+
+user_input(){
+    printf "    Are you installing Arch on a external storage ? [y/N]\n"
+    read external
+    external="$( [[ "${external,,}" == y[a-z]* ]] && printf "true" || printf "false" )"
+
+    printf "\n"
+    lsblk
+    printf "    On which partition do you want to install Arch ? (Example: sda)\n"
+    read partition
+    partition="$( lsblk | grep "disk" | grep -o "[0-9a-zA-Z]*$partition[0-9a-zA-Z]*" )"
+    [[ -z "$partition" ]] && log.error "Partition not found."
+
+    printf "    Do you want to update the mirrorlist ? [y/N]\n" 
+    read mirror
+    mirror="$( [[ "${mirror,,}" == y[a-z]* ]] && printf "true" || printf "false" )"
+
+    printf "    Enter a hostname:\n" 
+    read hostnm
+    [[ "$hostnm" != [a-z]* ]] && log.error "Invalid hostname."
+
+    printf "    Enter a username:\n" 
+    read usernm
+    [[ "$usernm" != [a-z]* ]] && log.error "Invalid username."
+
+    printf "    Enter user's password:\n" 
+    read -s userpw
+    printf "    Repeat the password:\n"
+    read -s confirm
+    [[ -z "$userpw" || "$userpw" != "$confirm" ]] && log.error "Invalid password."
+
+    printf "    Enter root's password:\n" 
+    read -s rootpw
+    printf "    Repeat the password:\n"
+    read -s confirm
+    [[ -z "$rootpw" || "$rootpw" != "$confirm" ]] && log.error "Invalid password."
+}
+
+set_timedatectl() {
+    log.info "Updating the system clock..."
+    timedatectl set-ntp true
+}
+
+check_uefi() {
+    log.info "Checking if UEFI..."
+    [[ "$external" == false ]] && ls /sys/firmware/efi/efivars &> /dev/null && uefi=true
+}
+
+set_partitions() {
+    [[ "$partion" == [0-9a-zA-Z]*[0-9] ]] && between="p"
+    partition1=${partion}${between}1
+    partition3=${partion}${between}2
+    [[ "$external" == false ]] && partition2=${partion}${between}2 && partition3=${partion}${between}3
+}
+
+clean_table() {
+    log.info "Cleaning the partition table..."
+    wipefs -a /dev/$partition1 #&> /dev/null
+    [[ "$external" == false ]] && wipefs -a /dev/$partition2 #&> /dev/null
+    wipefs -a /dev/$partition3 #&> /dev/null
+    wipefs -a /dev/$partition #&> /dev/null
+}
+
+create_table() {
+    local swap=$( free -m | grep "Mem" | awk '{ print $2 }' )
+    (( ( swap / 2000 ) + 1 ))
+
+    log.info "Creating a new partition table..."
+    if [ "$uefi" = true ]
+    then
+        sgdisk -Z /dev/$partition #&> /dev/null
+        sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"boot" /dev/$partition #&> /dev/null
+        sgdisk -n 0:0:+${swap}G -t 0:8200 -c 0:"swap" /dev/$partition #&> /dev/null
+        sgdisk -n 0:0:0 -t 0:8300 -c 0:"arch" /dev/$partition #&> /dev/null
+        sgdisk -p /dev/$partition #&> /dev/null
+    else
+        [[ "$external" == false ]] && additionnal_instructions="+${swap}G\nn\np\n3\n\n"
+        printf "o\nn\np\n1\n\n+500M\nn\np\n2\n\n${additionnal_instructions}\nw\n" | fdisk /dev/$partition #&> /dev/null
+        fdisk -l /dev/$partition #&> /dev/null
+    fi
+
+    log.info "Updating the partition table..."
+    partprobe /dev/$partition > /dev/null
+}
+
+format_partitions() {
+    log.info "Formatting the \"boot\" partition..."
+    if [[ "$external" == "n" ]]
+    then
+        [[ "$uefi" = true ]] && mkfs.fat -F32 /dev/$partition1 &> /dev/null || mkfs.ext2 -F /dev/$partition1 #&> /dev/null
+      
+        log.ingo "Formatting the \"swap\" partition..."
+        mkswap /dev/$partition2 #&> /dev/null
+        swapon /dev/$partition2 #&> /dev/null
+      
+        log.info "Formatting the \"arch\" partition..."
+        mkfs.ext4 -F /dev/$partition3 #&> /dev/null
+    else
+        mkfs.ext4 -O "^has_journal" /dev/$partition1 #&> /dev/null
+      
+        log.info "Formatting the \"arch\" partition..."
+        mkfs.ext4 -O "^has_journal" /dev/$partition3 #&> /dev/null
+    fi
+}
+
+mount_partitions() {
+    log.info "Mounting \"/mnt\"..."
+    mount /dev/$partition3 /mnt
+    log.info "Creating \"/mnt/boot\"..."
+    mkdir /mnt/boot
+    log.info "Creating \"/mnt/home\"..."
+    mkdir /mnt/home
+    log.info "Mounting \"/mnt/boot\"..."
+    mount /dev/$partition1 /mnt/boot
+    log.info "Mounting \"/mnt/home\"..."
+    mount /dev/$partition3 /mnt/home
+}
+
+update_mirrors() {
+    log.info "Updating the mirror list..."
+
+    cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+    sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup      
+    rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+}
+
+install_base() {
+    log.info "Installing the operating system..."
+    pacstrap /mnt base base-devel #&> /dev/null
+}
+
+set_fstab() {
+    log.info "Generating the fstab file..."
+    genfstab -U /mnt >> /mnt/etc/fstab
+}
+
+set_clock() {
+    log.info "Setting the hardware clock..."
+    arch-chroot /mnt ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
+    arch-chroot /mnt hwclock --systohc --utc
+}
+
+set_language() {
+    log.info "Setting the language..."
+    arch-chroot /mnt sed -i '/'\#en_US.UTF-8'/s/^#//' /etc/locale.gen
+    arch-chroot /mnt locale-gen #> /dev/null
+    arch-chroot /mnt echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf #> /dev/null
+}
+
+create_hostname() {
+    log.info "Creating the hostname..."
+    arch-chroot /mnt echo $hostnm > /mnt/etc/hostname
+    arch-chroot /mnt echo "127.0.1.1    $hostnm.localdomain     $hostnm" >> /mnt/etc/hosts
+}
+
+create_user() {
+    log.info "Creating the user..."
+    arch-chroot /mnt useradd -m -g users -G wheel,storage,power -s /bin/bash $usernm
+    arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+    arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/ a Defaults rootpw' /etc/sudoers 
+}
+
+set_passwords() {
+    log.info "Setting user's password..."
+    printf "${usertpw}\n${userpw}\n" | arch-chroot /mnt passwd $usernm
+
+    log.info "Setting root's password..."
+    printf "${rootpw}\n${rootpw}\n" | arch-chroot /mnt passwd
+}
+
+udpate_pacman() {
+    log.info "Updating pacman's configuration"
+
+    arch-chroot /mnt sed -i '/'multilib\]'/s/^#//' /etc/pacman.conf
+    arch-chroot /mnt sed -i '/\[multilib\]/ a Include = /etc/pacman.d/mirrorlist' /etc/pacman.conf
+
+    log.info "Updating pacman's repositories..."
+
+    arch-chroot /mnt pacman -Sy
+}
+
+install_packages() {
+    log.info "Installing essential packages..."
+
+    arch-chroot /mnt pacman -S --noconfirm \
+        intel-ucode \
+        xf86-video-intel mesa \
+        xorg-server xorg-xinit \
+        iw wpa_supplicant #\
+        #&> /dev/null
+}
+
+set_bootctl(){
+    log.info "Installing bootctl..."
+
+    arch-chroot /mnt bootctl install &> /dev/null
+    arch-chroot /mnt printf "title Arch Linux\nlinux /vmlinuz-linux\ninitrd /intel-ucode.img\ninitrd /initramfs-linux.img\noptions root=/dev/${partition3} pcie_aspm=force rw\n" > /mnt/boot/loader/entries/arch.conf
+}
+
+set_mkinitcpio() {
+    log.info "Setting mkinitcpio"
+
+    arch-chroot /mnt sed -i '52s/autodetect modconf block/block autodetect modconf/' /etc/mkinitcpio.conf
+    arch-chroot /mnt mkinitcpio -p linux
+}
+
+set_grub() {
+    log.info "Installing grub..."
+
+    arch-chroot /mnt pacman -S --noconfirm grub #&> /dev/null
+    #arch-chroot /mnt grub-install --target=i386-pc /dev/$partition &> /dev/null || \
+    #    arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$partition &> /dev/null
+    arch-chroot /mnt grub-install --target=i386-pc /dev/$partition || \
+        arch-chroot /mnt grub-install --force --recheck --target=i386-pc /dev/$partition
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg #&> /dev/null
+
+    [[ "$external" == true ]] && uuid=$( blkid -o value -s UUID /dev/$sd3 ) && \
+        arch-chroot /mnt echo -e "LABEL Arch\nMENU LABEL Arch Linux\nLINUX ../vmlinuz-linux\nAPPEND root=UUID=${uuid} ro\nINITRD ../initramfs-linux.img\n" > /mnt/boot/grub/menu.lst
+}
+
+shut() {
+    log.info "Unmounting the partitions..."
+    umount -R /mnt
+
+    log.info "Shutting down the system..."
+    read -n 1 -s -r -p "    Press any key to continue (or Ctrl-C to quit)"
+    printf "\n"
+    shutdown -h now
+}
+
+# ---
+# GLOBAL
+# ---
+
+# ---
+# MAIN
+# ---
+
+main() {
+    # Chapter 0 - Initialisation 
+
+    download_log
+
+    welcome
+
+    user_input
+
+    # Chapter 1 - Preparations
+
+    printf "\n    ---\n\n    Chapter I - Preparations\n\n"
+
+    set_timedatectl
+
+    check_uefi
+
+    printf "\n    ---\n\n    Chapter 2 - Partitions\n\n"
+
+    set_partitions
+
+    clean_table
+
+    create_table
+
+    format_partitions
+
+    mount_partitions
+
+    # Chapter III - Installation
+
+    printf "\n    ---\n\n    Chapter III - Installation\n\n"
+
+    [[ "$mirror" == true ]] && update_mirrors
+
+    install_base
+
+    # Chapter IV - Configuration
+
+    printf "\n    ---\n\n    Chapter IV - Configuration\n\n"
+
+    set_fstab
+
+    set_clock
+
+    set_language
+
+    create_hostname
+
+    create_user
+
+    set_passwords
+
+    update_pacman
+
+    install_packages
+
+    log.info "Setting the boot loader..."
+    if [[ "$uefi" = true ]]
+    then
+        set_bootctl
+    else
+        [[ "$external" == true ]] && set_mkinitcpio
+
+        set_grub
+    fi
+
+    shut
+}
+
+# ---
+# LAUNCH
+# ---
+
+main 

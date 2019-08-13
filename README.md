@@ -1,19 +1,19 @@
 # Introduction
 
-**A**(rch)**L**(inux)**I**(nstall)**S**(cript) is a very minimal script that makes my installations of Arch Linux on my various machines as painless and fast as possible. It goes from blank to ready to go in a matter of minutes. Bonus point, everything is automated. 
+**M**(inimal)**A**(rch)**L**(inux)**I**(nstaller) is a very simple script that makes my installations of Arch Linux on my various machines as painless and fast as possible. It goes from blank to ready to go in a matter of minutes.
 
-This script currently supports installs on:
+Supports:
 - EUFI systems
 - Non-EUFI systems
-- External storage
+- installation on external storages
 
-**NOTE:** This script only supports basic hardware with Intel inside. If you need to, you'll have to install additional drivers yourself once the installation is completed.
+**NOTE:** Only Intel hardware is supported out of the box. If you need to, you'll have to install additional drivers yourself once the installation is completed.
 
 # How to use ? 
 
 ### Step 1: Connect to the internet
 
-Wireless method:
+Wireless:
 
 ```bash
 wifi-menu
@@ -21,27 +21,26 @@ wifi-menu
 
 **OR**
 
-Wired method:
+Wired:
 
 ```bash
-systemctl restart dhcpcd && sleep 5
+systemctl restart dhcpcd
 ```
 
 ### Step 2: Download and launch the installer
 
-Recommended method:
+Recommended:
 
 ```bash
-wget https://github.com/gawlk/alis/blob/master/fifo.sh
-chmod +x fifo.sh
-# Review the code and check that everything is up to date according to the "Installation guide"
-./fifo.sh
+wget https://gitlab.com/gawlk/mali/raw/master/mali
+less mali # Review the code and check that everything is up to date according to the "Installation guide" on the Arch Linux wiki
+bash mali
 ```
 
 **OR**
 
-Fastest method:
+Not recommended:
 
 ```bash
-curl -sSL https://git.io/fAlOi | bash
+curl -sSL tiny.cc/mali | bash
 ```
